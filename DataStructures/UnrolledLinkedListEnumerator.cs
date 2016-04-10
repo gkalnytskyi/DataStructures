@@ -7,20 +7,20 @@ namespace DataStructures
 {
     public partial class UnrolledLinkedList<T>
     {
-        internal class UnroledLinkedListEnumerator<T> : IEnumerator<T>, IEnumerator
+        internal class UnroledLinkedListEnumerator<U> : IEnumerator<U>, IEnumerator
         {
-            private UnrolledLinkedList<T> _List;
+            private UnrolledLinkedList<U> _List;
             private int _CurrentIndex;
-            private UnrolledLinkedListNode<T> _CurrentNode;
+            private UnrolledLinkedListNode<U> _CurrentNode;
 
-            public UnroledLinkedListEnumerator(UnrolledLinkedList<T> list)
+            public UnroledLinkedListEnumerator(UnrolledLinkedList<U> list)
             {
                 _List = list;
                 _CurrentIndex = -1;
                 _CurrentNode = _List._FirstNode;
             }
 
-            public T Current
+            public U Current
             {
                 get
                 {
