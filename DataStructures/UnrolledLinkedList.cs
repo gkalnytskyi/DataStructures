@@ -141,11 +141,10 @@ namespace DataStructures
             }
 
             var currentNode = _FirstNode;
-            int virtualIndex = arrayIndex;
             do
             {
-                int count = currentNode.CopyTo(array, virtualIndex);
-                virtualIndex += count;
+                int count = currentNode.CopyTo(array, arrayIndex);
+                arrayIndex += count;
                 currentNode = currentNode.Next;
             }
             while (currentNode != null);
