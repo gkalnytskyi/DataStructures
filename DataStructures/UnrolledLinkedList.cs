@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace DataStructures
 {
-    public partial class UnrolledLinkedList<T> : ICollection<T>, IEnumerable<T>
+    public partial class UnrolledLinkedList<T> : IList<T>, ICollection<T>, IEnumerable<T>
     {
         private readonly int _NodeCapasity;
         private UnrolledLinkedListNode<T> _FirstNode;
@@ -23,7 +23,7 @@ namespace DataStructures
             Count = 0;
         }
 
-        #region ICollection<T> properties
+        #region ICollection<T> Properties
         public int Count { get; private set; }
 
         public bool IsReadOnly
@@ -35,7 +35,22 @@ namespace DataStructures
         }
         #endregion
 
-        #region IEnumerable<T> methods
+        #region IList<T> Properties
+        public T this[int index]
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+        #endregion
+
+        #region IEnumerable<T> Methods
         /// <summary>
         /// Returns an enumerator that iterates through the collection.
         /// </summary>
@@ -49,7 +64,7 @@ namespace DataStructures
         {
             return GetEnumerator();
         }
-        #endregion
+        #endregion IEnumerable<T> Methods
 
         #region ICollection<T> Methods
         /// <summary>
@@ -178,5 +193,30 @@ namespace DataStructures
             while (currentNode != null);
         }
         #endregion ICollection<T> Methods
+
+        #region IList<T> Methods
+        public int IndexOf(T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Insert(int index, T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveAt(int index)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion IList<T> Methods
+
+        public void AddRange(IEnumerable<T> range)
+        {
+            foreach (var item in range)
+            {
+                Add(item);
+            }
+        }
     }
 }
