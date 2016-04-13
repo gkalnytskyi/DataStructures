@@ -73,7 +73,7 @@ namespace DataStructures
 
             do
             {
-                var index_found = Array.IndexOf(currentNode.Data, item, 0, currentNode.Count);
+                var index_found = currentNode.IndexOf(item);
                 if (index_found > -1)
                 {
                     found = true;
@@ -113,7 +113,7 @@ namespace DataStructures
             var currentNode = _FirstNode;
             do
             {
-                found = Array.IndexOf(currentNode.Data, item, 0, currentNode.Count) > -1;
+                found = currentNode.Contains(item);
                 currentNode = currentNode.Next;
             }
             while (!found && currentNode != null);
@@ -122,7 +122,33 @@ namespace DataStructures
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            if (array == null)
+            {
+                throw new ArgumentNullException("Parameter 'array' cannot be null");
+            }
+
+            if (arrayIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException("Parameter 'arrayIndex' cannot be negative");
+            }
+
+            if (array.Length - arrayIndex < Count)
+            {
+                throw new ArgumentException(
+                    "Data will not fit into destination 'array' " +
+                    "starting from specified index. " + 
+                    "{\"array.Length\" : {{{0}}}, \"arrayIndex\" : {{{1}}}}");
+            }
+
+            var currentNode = _FirstNode;
+            int virtualIndex = arrayIndex;
+            do
+            {
+                int count = currentNode.CopyTo(array, virtualIndex);
+                virtualIndex += count;
+                currentNode = currentNode.Next;
+            }
+            while (currentNode != null);
         }
     }
 }

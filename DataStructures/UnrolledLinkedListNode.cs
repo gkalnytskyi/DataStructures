@@ -69,6 +69,22 @@ namespace DataStructures
             PullItemsFromNext();
         }
 
+        public int CopyTo(T[] array, int arrayIndex)
+        {
+            Array.Copy(Data, 0, array, arrayIndex, Count);
+            return Count;
+        }
+
+        public int IndexOf(T item)
+        {
+            return Array.IndexOf(Data, item, 0, Count);
+        }
+
+        public bool Contains(T item)
+        {
+            return (IndexOf(item) > -1);
+        }
+
         private void ShiftItemsLeft(int sourceIndex, int destinationIndex)
         {
             if (destinationIndex > sourceIndex)
