@@ -4,10 +4,9 @@ using System.Collections.Generic;
 
 namespace DataStructures
 {
-    public partial class UnrolledLinkedList<T> : IEnumerable<T>
+    public partial class UnrolledLinkedList<T> : ICollection<T>, IEnumerable<T>
     {
         private readonly int _NodeCapasity;
-        private int _Count;
         private UnrolledLinkedListNode<T> _FirstNode;
         private UnrolledLinkedListNode<T> _LastNode;
 
@@ -21,10 +20,18 @@ namespace DataStructures
             }
             _NodeCapasity = nodeCapasity;
             _LastNode = _FirstNode = new UnrolledLinkedListNode<T>(this._NodeCapasity);
-            _Count = 0;
+            Count = 0;
         }
 
-        public int Count { get { return _Count; } }
+        public int Count { get; private set; }
+
+        public bool IsReadOnly
+        {
+            get
+            {
+                return false;
+            }
+        }
 
         public IEnumerator<T> GetEnumerator()
         {
@@ -36,28 +43,76 @@ namespace DataStructures
             return GetEnumerator();
         }
 
+
         public void Add(T item)
         {
             AddLast(item);
         }
 
-        public void AddLast(T item)
+        private void AddLast(T item)
         {
-            if (_LastNode.Count < _NodeCapasity)
-            {
-                _LastNode.Data[_LastNode.Count] = item;
-                _LastNode.Count += 1;
-            }
-            else
+            if (!_LastNode.TryAddItem(item))
             {
                 var newNode = new UnrolledLinkedListNode<T>(_NodeCapasity, _LastNode, item);
                 _LastNode.Next = newNode;
                 _LastNode = newNode;
             }
-            _Count += 1;
+            Count += 1;
         }
 
+
         public bool Remove(T item)
+        {
+            return RemoveFirst(item);
+        }
+
+        private bool RemoveFirst(T item)
+        {
+            var found = false;
+            var currentNode = _FirstNode;
+
+            do
+            {
+                var index_found = Array.IndexOf(currentNode.Data, item, 0, currentNode.Count);
+                if (index_found > -1)
+                {
+                    found = true;
+                    currentNode.RemoveItem(index_found);
+                    Count -= 1;
+                    if (currentNode.IsEmpty())
+                    {
+                        var prevNode = currentNode.Previous;
+                        var nextNode = currentNode.Next;
+                        if (nextNode != null)
+                        {
+                            nextNode.Previous = prevNode;
+                        }
+                        if (prevNode != null)
+                        {
+                            prevNode.Next = nextNode;
+                        }
+                    }
+                    break;
+                }
+                currentNode = currentNode.Next;
+            }
+            while ((currentNode != null));
+
+            return found;
+        }
+
+        public void Clear()
+        {
+            _LastNode = _FirstNode = new UnrolledLinkedListNode<T>(_NodeCapasity);
+            Count = 0;
+        }
+
+        public bool Contains(T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
         {
             throw new NotImplementedException();
         }

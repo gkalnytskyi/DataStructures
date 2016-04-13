@@ -1,64 +1,32 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using DataStructures;
 using NUnit.Framework;
 
 namespace DataStructuresTest
 {
     [TestFixture]
-    public class UnrolledLinkedListTest
+    class UnrolledLinkedListTest
     {
         UnrolledLinkedList<int> _List;
 
         [SetUp]
         public void TestSetUp()
         {
-            _List = new UnrolledLinkedList<int>();
+            _List = new UnrolledLinkedList<int>(8);
         }
 
         [Test]
-        public void Get_Enumerator_Test()
+        public void Adding_and_Reading_one_item()
         {
             // Act
-            var enumerator = _List.GetEnumerator();
-
-            // Assert
-            Assert.That(enumerator, Is.Not.Null);
-        }
-
-        [Test]
-        public void Enumerator_Throws_Exception_For_Current_if_Not_Moved()
-        {
-            // Arrange
-            var enumerator = _List.GetEnumerator();
-            // Act
-            Assert.That(
-                delegate { var current = enumerator.Current; },
-                Throws.InvalidOperationException);
-        }
-
-        [Test]
-        public void Enumerator_MoveNext_Returns_False_After_At_The_End_Of_Iteration()
-        {
-            // Arrange
-            _List.Add(5);
-            var enumerator = _List.GetEnumerator();
-            // Act
-            enumerator.MoveNext();
-            var canMove = enumerator.MoveNext();
-            // Assert
-            Assert.That(canMove, Is.False);
-        }
-
-        [Test]
-        public void Element_is_added_to_UnrolledLinkedList()
-        {
-            // Act
-            _List.Add(5);
+            _List.Add(1);
             var enumerator = _List.GetEnumerator();
             enumerator.MoveNext();
-            var item = enumerator.Current;
+            var result = enumerator.Current;
+
             // Assert
-            Assert.That(item, Is.EqualTo(5));
+            Assert.That(result, Is.EqualTo(1));
         }
 
         [Test]
@@ -83,36 +51,192 @@ namespace DataStructuresTest
             Assert.That(result, Is.EquivalentTo(new int[] { 1, 2, 3, 4, 5 }));
         }
 
-
         [Test]
-        public void Enumerator_iterates_over_multiple_nodes()
+        public void Clearing_Unrolled_Linked_List()
         {
-            const int seqLength = 5;
             // Arrange
-            _List = new UnrolledLinkedList<int>(2);
-            GenerateSequence(_List, seqLength);
+            TestUtils.GenerateSequence(_List, 10);
 
             // Act
-            var result = new int[seqLength];
-            var i = 0;
-            foreach (var item in _List)
-            {
-                result[i] = item;
-                i++;
-            }
+            _List.Clear();
 
             // Assert
-            Assert.That(result, Is.EquivalentTo(Enumerable.Range(1,seqLength)));
+            Assert.That(_List.Count, Is.EqualTo(0));
+            Assert.That(_List.GetEnumerator().MoveNext(), Is.False);
         }
 
-
-        private static void GenerateSequence(UnrolledLinkedList<int> list, int size)
+        [Test]
+        public void Remove_non_existing_item_does_not_change_the_collection()
         {
-            int ceil_size = size + 1;
-            for (int i = 1; i < ceil_size; ++i)
-            {
-                list.Add(i);
-            }
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 8);
+
+            // Act
+            var result = _List.Remove(9);
+
+            // Assert
+            Assert.That(result, Is.False);
+            Assert.That(_List.Count, Is.EqualTo(8));
+            Assert.That(_List, Is.EquivalentTo(Enumerable.Range(1, 8)));
         }
+
+        [Test]
+        public void Removing_only_first_of_duplicate_items()
+        {
+            // Arrange
+            _List.Add(5);
+            _List.Add(7);
+            _List.Add(9);
+            _List.Add(7);
+            _List.Add(8);
+
+            // Act
+            _List.Remove(7);
+
+            // Assert
+            Assert.That(_List, Is.EquivalentTo(new[] { 5, 9, 7, 8 }));
+        }
+
+        [Test]
+        public void Removing_only_first_of_duplicate_items_when_they_go_in_sequence()
+        {
+            // Arrange
+            _List.Add(5);
+            _List.Add(7);
+            _List.Add(7);
+            _List.Add(9);
+            _List.Add(8);
+
+            // Act
+            _List.Remove(7);
+
+            // Assert
+            Assert.That(_List, Is.EquivalentTo(new[] { 5, 7, 9, 8 }));
+        }
+
+        [Test]
+        public void Removing_item_equal_to_default_value_for_the_type()
+        {
+            // Arrange
+            _List = new UnrolledLinkedList<int>(3);
+            _List.Add(3);
+            _List.Add(9);
+            _List.Add(1);
+            _List.Add(default(int)); // It's 0
+            _List.Add(4);
+
+            // ensuring that there is a default element value
+            // before actual default value we wish to delete
+            _List.Remove(1);
+            // Act
+            _List.Remove(default(int));
+
+            // Assert
+            Assert.That(_List.Count, Is.EqualTo(3));
+            Assert.That(_List, Is.EquivalentTo(new[] { 3, 9, 4 }));
+        }
+
+        [Test]
+        public void Remove_Item_From_UnrolledLinkedList_when_it_is_at_the_end_of_list()
+        {
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 8);
+
+            // Act
+            bool result = _List.Remove(8);
+
+            // Assert
+            Assert.That(result, Is.True);
+            Assert.That(_List.Count, Is.EqualTo(7));
+            Assert.That(_List, Is.EquivalentTo(Enumerable.Range(1, 7)));
+        }
+
+        [Test]
+        public void Remove_Item_From_UnrolledLinkedList_when_it_is_at_the_end_of_node()
+        {
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 8);
+
+            // Act
+            var result = _List.Remove(4);
+
+            // Assert
+            Assert.That(result, Is.True);
+            Assert.That(_List.Count, Is.EqualTo(7));
+            var template = Enumerable.Range(1, 3).Union(Enumerable.Range(5,4));
+            Assert.That(_List, Is.EquivalentTo(template));
+        }
+
+        [Test]
+        public void Remove_Item_UnrolledLinkedList_when_it_is_in_the_middle_of_node()
+        {
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 8);
+
+            // Act
+            bool result = _List.Remove(3);
+
+            // Assert
+            Assert.That(result, Is.True);
+            Assert.That(_List.Count, Is.EqualTo(7));
+            var template = Enumerable.Range(1, 2).Union(Enumerable.Range(4, 5));
+            Assert.That(_List, Is.EquivalentTo(template));
+        }
+
+        [Test]
+        public void Remove_Item_UnrolledLinkedList_when_it_is_at_the_begining_of_node()
+        {
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 8);
+
+            // Act
+            bool result = _List.Remove(5);
+
+            // Assert
+            Assert.That(result, Is.True);
+            Assert.That(_List.Count, Is.EqualTo(7));
+            var template = Enumerable.Range(1, 4).Union(Enumerable.Range(6, 3));
+            Assert.That(_List, Is.EquivalentTo(template));
+        }
+
+        [Test]
+        public void Remove_Several_Consequent_Items_from_UnrolledLinkedList()
+        {
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 8);
+
+            // Act
+            _List.Remove(2);
+            _List.Remove(3);
+            _List.Remove(4);
+
+            // Assert
+            Assert.That(_List.Count, Is.EqualTo(5));
+            var template = Enumerable.Range(1, 1).Union(Enumerable.Range(5, 4));
+            Assert.That(_List, Is.EquivalentTo(template));
+        }
+
+
+
+        [Test]
+        public void Remove_all_items_of_the_node_deletes_it()
+        {
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 5);
+
+            // Act
+            _List.Remove(5);
+            var enumerator = _List.GetEnumerator();
+            for (var i = 0; i < 4; ++i)
+            {
+                enumerator.MoveNext();
+            }
+
+            var result = enumerator.MoveNext();
+
+            // Assert
+            Assert.That(result, Is.False);
+        }
+
     }
 }

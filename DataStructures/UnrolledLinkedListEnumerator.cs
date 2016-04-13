@@ -43,7 +43,7 @@ namespace DataStructures
 
             public bool MoveNext()
             {
-                if (_CurrentNode == null)
+                if (_CurrentNode == null || _CurrentNode.Count < 1)
                 {
                     return false;
                 }
@@ -54,7 +54,6 @@ namespace DataStructures
                     return true;
                 }
 
-                _CurrentIndex = 0;
                 _CurrentNode = _CurrentNode.Next;
 
                 if (_CurrentNode == null)
@@ -63,6 +62,7 @@ namespace DataStructures
                     return false;
                 }
 
+                _CurrentIndex = 0;
                 return true;
             }
 
