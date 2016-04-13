@@ -23,6 +23,7 @@ namespace DataStructures
             Count = 0;
         }
 
+        #region ICollection<T> properties
         public int Count { get; private set; }
 
         public bool IsReadOnly
@@ -32,7 +33,13 @@ namespace DataStructures
                 return false;
             }
         }
+        #endregion
 
+        #region IEnumerable<T> methods
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator<T> GetEnumerator()
         {
             return new UnroledLinkedListEnumerator<T>(this);
@@ -42,8 +49,12 @@ namespace DataStructures
         {
             return GetEnumerator();
         }
+        #endregion
 
-
+        #region ICollection<T> Methods
+        /// <summary>
+        /// Adds an item to the end of the collection
+        /// <param name="item"></param>
         public void Add(T item)
         {
             AddLast(item);
@@ -60,7 +71,11 @@ namespace DataStructures
             Count += 1;
         }
 
-
+        /// <summary>
+        /// Removes the first occurrence of the item in the list
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         public bool Remove(T item)
         {
             return RemoveFirst(item);
@@ -101,12 +116,20 @@ namespace DataStructures
             return found;
         }
 
+        /// <summary>
+        /// Removes all items from the collection
+        /// </summary>
         public void Clear()
         {
             _LastNode = _FirstNode = new UnrolledLinkedListNode<T>(_NodeCapasity);
             Count = 0;
         }
 
+        /// <summary>
+        /// Determines whether the collection contains a specific value.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         public bool Contains(T item)
         {
             bool found = false;
@@ -120,6 +143,11 @@ namespace DataStructures
             return found;
         }
 
+        /// <summary>
+        /// Copies the elements of the collection to an Array, starting at a particular Array index.
+        /// </summary>
+        /// <param name="array"></param>
+        /// <param name="arrayIndex"></param>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null)
@@ -149,5 +177,6 @@ namespace DataStructures
             }
             while (currentNode != null);
         }
+        #endregion ICollection<T> Methods
     }
 }
