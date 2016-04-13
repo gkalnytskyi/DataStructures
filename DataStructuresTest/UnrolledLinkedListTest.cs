@@ -238,5 +238,30 @@ namespace DataStructuresTest
             Assert.That(result, Is.False);
         }
 
+        [Test]
+        public void Contains_does_not_find_element_when_it_is_not_in_the_collection()
+        {
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 9);
+
+            // Act
+            bool result = _List.Contains(51);
+
+            // Assert
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void Contains_finds_element_when_it_is_in_the_collection()
+        {
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 9);
+
+            // Act
+            bool result = _List.Contains(7);
+
+            // Assert
+            Assert.That(result, Is.True);
+        }
     }
 }

@@ -109,7 +109,15 @@ namespace DataStructures
 
         public bool Contains(T item)
         {
-            throw new NotImplementedException();
+            bool found = false;
+            var currentNode = _FirstNode;
+            do
+            {
+                found = Array.IndexOf(currentNode.Data, item, 0, currentNode.Count) > -1;
+                currentNode = currentNode.Next;
+            }
+            while (!found && currentNode != null);
+            return found;
         }
 
         public void CopyTo(T[] array, int arrayIndex)
