@@ -6,7 +6,7 @@ namespace DataStructures
     {
         public UnrolledLinkedListNode<T> Previous;
         public UnrolledLinkedListNode<T> Next;
-        public int Count { get; private set; }
+        public int Count { get; set; }
         public readonly T[] Data;
 
         public UnrolledLinkedListNode(int capacity)
@@ -129,6 +129,22 @@ namespace DataStructures
             Count += numberOfItemsToTransfer;
 
             Next.ShiftItemsLeft(numberOfItemsToTransfer, 0);
+        }
+
+        public void Insert(int index, T item)
+        {
+            ShiftItemsRight(index, index + 1);
+            Data[index] = item;
+        }
+
+        private void ShiftItemsRight(int sourceIndex, int destinationIndex)
+        {
+            if (destinationIndex < sourceIndex)
+                throw new InvalidOperationException("This shifts items left");
+
+            int length = Count - sourceIndex;
+            Array.Copy(Data, sourceIndex, Data, destinationIndex, length);
+            Count += destinationIndex - sourceIndex;
         }
     }
 }

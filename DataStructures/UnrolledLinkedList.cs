@@ -23,6 +23,13 @@ namespace DataStructures
             Count = 0;
         }
 
+        public UnrolledLinkedList(
+            int nodeCapasity,
+            IEnumerable<T> collection) : this(nodeCapasity)
+        {
+            AddRange(collection);
+        }
+
         #region ICollection<T> Properties
         public int Count { get; private set; }
 
@@ -101,7 +108,7 @@ namespace DataStructures
             AddLast(item);
         }
 
-        private void AddLast(T item)
+        public void AddLast(T item)
         {
             if (!_LastNode.TryAddItem(item))
             {
@@ -246,7 +253,58 @@ namespace DataStructures
 
         public void Insert(int index, T item)
         {
-            throw new NotImplementedException();
+            if (index < 0 || index > Count)
+            {
+                throw new ArgumentOutOfRangeException(
+                      string.Format("Index cannot be less than 0, " +
+                                    "or greater than Count: {0}", Count));
+            }
+            if (index == Count)
+            {
+                AddLast(item);
+                return;
+            }
+            InsertAt(index, item);
+        }
+
+        private void InsertAt(int index, T item)
+        {
+            var node = FindNodeAndIndex(ref index);
+            if (node.Count < _NodeCapasity)
+            {
+                node.Insert(index, item);
+            }
+            else
+            {
+                var newNode = new UnrolledLinkedListNode<T>(_NodeCapasity);
+                newNode.Next = node.Next;
+                node.Next = newNode;
+                newNode.Previous = node;
+                int midIndex = _NodeCapasity / 2;
+
+                UnrolledLinkedListNode<T> nodeInsertTo = null;
+
+                if (index > midIndex)
+                {
+                    nodeInsertTo = newNode;
+                    midIndex += 1;
+                    index -= midIndex;
+                }
+                else
+                {
+                    nodeInsertTo = node;
+                }
+
+                var length = node.Count - midIndex;
+                Array.Copy(node.Data, midIndex, newNode.Data, 0, length);
+                newNode.Count += length;
+
+                Array.Clear(node.Data, midIndex, length);
+                node.Count -= length;
+
+                nodeInsertTo.Insert(index, item);
+            }
+            Count += 1;
         }
 
         public void RemoveAt(int index)
@@ -261,6 +319,11 @@ namespace DataStructures
             {
                 Add(item);
             }
+        }
+
+        public void AddFirst(T item)
+        {
+            Insert(0, item);
         }
     }
 }
