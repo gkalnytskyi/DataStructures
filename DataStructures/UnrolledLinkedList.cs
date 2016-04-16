@@ -40,13 +40,39 @@ namespace DataStructures
         {
             get
             {
-                throw new NotImplementedException();
+                CheckIndex(index);
+                var node = FindNodeAndIndex(ref index);
+                return node.Data[index];
             }
 
             set
             {
-                throw new NotImplementedException();
+                CheckIndex(index);
+                var node = FindNodeAndIndex(ref index);
+                node.Data[index] = value;
             }
+        }
+
+        private void CheckIndex(int index)
+        {
+            if (index < 0 || index > (Count - 1))
+                throw new IndexOutOfRangeException();
+        }
+
+        private UnrolledLinkedListNode<T> FindNodeAndIndex(ref int index)
+        {
+            var currentNode = _FirstNode;
+            do
+            {
+                if (index < currentNode.Count)
+                {
+                    break;
+                }
+                index -= currentNode.Count;
+                currentNode = currentNode.Next;
+            }
+            while (currentNode != null);
+            return currentNode;
         }
         #endregion
 
@@ -197,7 +223,25 @@ namespace DataStructures
         #region IList<T> Methods
         public int IndexOf(T item)
         {
-            throw new NotImplementedException();
+            var currentNode = _FirstNode;
+            int index = 0;
+            bool found = false;
+            do
+            {
+                var i = currentNode.IndexOf(item);
+                if (i < 0)
+                {
+                    index += currentNode.Count;
+                }
+                else
+                {
+                    found = true;
+                    index += i;
+                }
+                currentNode = currentNode.Next;
+            }
+            while (currentNode != null && !found);
+            return (found) ? (index) : (-1);
         }
 
         public void Insert(int index, T item)
