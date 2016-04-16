@@ -433,7 +433,7 @@ namespace DataStructuresTest
         {
             // Arrange
             const int count = 15;
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
+            _List = TestUtils.GetUnrolledLinkedListWithItems(nodeCapacity, count);
 
             // Act
             _List.Insert(index, 42);
@@ -464,6 +464,57 @@ namespace DataStructuresTest
                                     Concat(Enumerable.Range(13, 1)).
                                     Concat(Enumerable.Range(42, 1)).
                                     Concat(Enumerable.Range(15, 8));
+            Assert.That(_List, Is.EquivalentTo(expectedResult));
+        }
+
+        [Test, Sequential]
+        public void RemoveAt_throws_ArgumentOutOfRangeException_for_invalid_index(
+            [Values(-1, 18, -100, 13, 15, 0)] int index,
+            [Values(7, 15, 6, 11, 15, 0)] int count)
+        {
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
+
+            // Act, Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => _List.RemoveAt(index));
+        }
+
+        [Test]
+        public void Delete_item_from_the_list_by_index(
+            [Values(0, 1, 7, 8, 9, 10, 12)] int index)
+        {
+            // Arrange
+            const int count = 15;
+            _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
+
+            // Act
+            _List.RemoveAt(index);
+
+            // Assert
+            var expectedResult = Enumerable.Range(1, count).
+                                    Except(Enumerable.Range(index + 1, 1));
+            Assert.That(_List.Count, Is.EqualTo(count - 1));
+            Assert.That(_List, Is.EquivalentTo(expectedResult));
+        }
+
+        [Test]
+        public void Delete_item_from_list_by_index_from_not_full_node([Values(8, 9)] int nodeCapacity)
+        {
+            // Arrange
+            const int count = 15;
+            _List = TestUtils.GetUnrolledLinkedListWithItems(nodeCapacity, count);
+            int initiallyRemoved = nodeCapacity / 2;
+            for (int i = 1; i < initiallyRemoved + 1; ++i)
+            {
+                _List.Remove(i);
+            }
+
+            // Act
+            _List.RemoveAt(2);
+
+            // Assert
+            var expectedResult = Enumerable.Range(5, 2).Concat(Enumerable.Range(8, count - 7));
+            Assert.That(_List.Count, Is.EqualTo(count - initiallyRemoved - 1));
             Assert.That(_List, Is.EquivalentTo(expectedResult));
         }
     }

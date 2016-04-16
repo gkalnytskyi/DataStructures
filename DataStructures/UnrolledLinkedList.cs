@@ -6,11 +6,12 @@ namespace DataStructures
 {
     public partial class UnrolledLinkedList<T> : IList<T>, ICollection<T>, IEnumerable<T>
     {
+        private const int CAPASITY = 16;
         private readonly int _NodeCapasity;
         private UnrolledLinkedListNode<T> _FirstNode;
         private UnrolledLinkedListNode<T> _LastNode;
 
-        public UnrolledLinkedList() : this(16) { }
+        public UnrolledLinkedList() : this(CAPASITY) { }
 
         public UnrolledLinkedList(int nodeCapasity)
         {
@@ -309,7 +310,15 @@ namespace DataStructures
 
         public void RemoveAt(int index)
         {
-            throw new NotImplementedException();
+            if (index < 0 || index > (Count - 1))
+            {
+                throw new ArgumentOutOfRangeException(
+                      string.Format("Index cannot be less than 0, " +
+                                    "or greater than Count: {0}", Count));
+            }
+            var node = FindNodeAndIndex(ref index);
+            node.RemoveItem(index);
+            Count -= 1;
         }
         #endregion IList<T> Methods
 
