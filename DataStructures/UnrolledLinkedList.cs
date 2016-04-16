@@ -83,7 +83,7 @@ namespace DataStructures
         /// <returns></returns>
         public IEnumerator<T> GetEnumerator()
         {
-            return new UnroledLinkedListEnumerator<T>(this);
+            return new Enumerator(this);
         }
 
         IEnumerator IEnumerable.GetEnumerator()

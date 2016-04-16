@@ -6,20 +6,20 @@ namespace DataStructures
 {
     public partial class UnrolledLinkedList<T>
     {
-        internal class UnroledLinkedListEnumerator<U> : IEnumerator<U>, IEnumerator
+        internal struct Enumerator : IEnumerator<T>, IEnumerator
         {
-            private UnrolledLinkedList<U> _List;
+            private UnrolledLinkedList<T> _List;
             private int _CurrentIndex;
-            private UnrolledLinkedListNode<U> _CurrentNode;
+            private UnrolledLinkedListNode<T> _CurrentNode;
 
-            public UnroledLinkedListEnumerator(UnrolledLinkedList<U> list)
+            public Enumerator(UnrolledLinkedList<T> list)
             {
                 _List = list;
                 _CurrentIndex = -1;
                 _CurrentNode = _List._FirstNode;
             }
 
-            public U Current
+            public T Current
             {
                 get
                 {
