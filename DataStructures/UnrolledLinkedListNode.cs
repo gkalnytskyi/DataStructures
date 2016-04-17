@@ -4,84 +4,64 @@ namespace DataStructures
 {
     class UnrolledLinkedListNode<T>
     {
-        public UnrolledLinkedListNode<T> Previous;
-        public UnrolledLinkedListNode<T> Next;
-        public int Count { get; private set; }
-        public readonly T[] Data;
+        internal UnrolledLinkedListNode<T> Previous { get; private set; }
+        internal UnrolledLinkedListNode<T> Next { get; private set; }
+        internal int Count { get; private set; }
+        internal readonly T[] Data;
 
         private int HalfCapacity { get { return (Data.Length + 1) / 2; } }
 
         #region Constructors
-        public UnrolledLinkedListNode(int capacity)
+        internal UnrolledLinkedListNode(int capacity)
         {
             Data = new T[capacity];
-        }
-
-        public UnrolledLinkedListNode(
-            int capacity,
-            UnrolledLinkedListNode<T> previous) : this(capacity)
-        {
-            Previous = previous;
-        }
-
-        public UnrolledLinkedListNode(
-            int capacity,
-            UnrolledLinkedListNode<T> previous,
-            UnrolledLinkedListNode<T> next) : this(capacity, previous)
-        {
-            Next = next;
-        }
-
-        public UnrolledLinkedListNode(
-            int capacity,
-            UnrolledLinkedListNode<T> previous,
-            T firstElement) : this(capacity, previous)
-        {
-            Data[0] = firstElement;
-            Count++;
+            Count = 0;
         }
         #endregion Constructors
 
-        #region Public Methods
-        public bool IsEmpty()
+        #region Methods
+        internal bool IsEmpty()
         {
             return Count == 0;
         }
 
-        public bool TryAddItem(T item)
+        internal void Add(T item)
         {
             if (Count < Data.Length)
             {
                 Data[Count] = item;
                 Count++;
-                return true;
             }
-            return false;
+            else
+            {
+                CreateNext();
+                Next.Add(item);
+            }
         }
 
-        public void RemoveItem(int index)
+        internal void RemoveAt(int index)
         {
             ShiftItemsLeft(index + 1, index);
             PullItemsFromNext();
         }
 
-        public int CopyTo(T[] array, int arrayIndex)
+        internal int CopyTo(T[] array, int arrayIndex)
         {
             Array.Copy(Data, 0, array, arrayIndex, Count);
             return Count;
         }
 
-        public int IndexOf(T item)
+        internal int IndexOf(T item)
         {
             return Array.IndexOf(Data, item, 0, Count);
         }
 
-        public bool Contains(T item)
+        internal bool Contains(T item)
         {
             return (IndexOf(item) > -1);
         }
 
-        public void Insert(int index, T item)
+        internal void Insert(int index, T item)
         {
             if (Count < Data.Length)
             {
@@ -111,6 +91,16 @@ namespace DataStructures
                 nodeInsertTo.Insert(index, item);
             }
         }
+
+        internal void ByPassNext()
+        {
+            if (Next == null)
+                return;
+            var newNext = Next.Next;
+            if (newNext != null)
+                newNext.Previous = this;
+            Next = newNext;
+        }
         #endregion Public Methods
 
 
@@ -121,13 +111,6 @@ namespace DataStructures
             newNode.Next = Next;
             newNode.Previous = this;
             Next = newNode;
-        }
-
-        private void ByPassNext()
-        {
-            var newNext = Next.Next;
-            newNext.Previous = this;
-            Next = newNext;
         }
 
         private void ShiftItemsRight(int sourceIndex, int destinationIndex)

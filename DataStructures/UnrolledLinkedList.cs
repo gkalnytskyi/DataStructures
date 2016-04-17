@@ -103,18 +103,17 @@ namespace DataStructures
         public void AddFirst(T item)
         {
             _FirstNode.Insert(0, item);
-            Count += 1;
+            Count++;
         }
 
         public void AddLast(T item)
         {
-            if (!_LastNode.TryAddItem(item))
+            _LastNode.Add(item);
+            if (_LastNode.Next != null)
             {
-                var newNode = new UnrolledLinkedListNode<T>(_NodeCapasity, _LastNode, item);
-                _LastNode.Next = newNode;
-                _LastNode = newNode;
+                _LastNode = _LastNode.Next;
             }
-            Count += 1;
+            Count++;
         }
         #endregion Public Non-Interface Methods
 
@@ -149,20 +148,12 @@ namespace DataStructures
                 if (index_found > -1)
                 {
                     found = true;
-                    currentNode.RemoveItem(index_found);
-                    Count -= 1;
-                    if (currentNode.IsEmpty())
+                    currentNode.RemoveAt(index_found);
+                    Count--;
+                    if (currentNode.IsEmpty() && currentNode.Previous != null)
                     {
                         var prevNode = currentNode.Previous;
-                        var nextNode = currentNode.Next;
-                        if (nextNode != null)
-                        {
-                            nextNode.Previous = prevNode;
-                        }
-                        if (prevNode != null)
-                        {
-                            prevNode.Next = nextNode;
-                        }
+                        prevNode.ByPassNext();
                     }
                     break;
                 }
@@ -281,7 +272,7 @@ namespace DataStructures
             }
             var node = FindNodeAndIndex(ref index);
             node.Insert(index, item);
-            Count += 1;
+            Count++;
         }
 
         public void RemoveAt(int index)
@@ -293,8 +284,8 @@ namespace DataStructures
                                     "or greater than Count: {0}", Count));
             }
             var node = FindNodeAndIndex(ref index);
-            node.RemoveItem(index);
-            Count -= 1;
+            node.RemoveAt(index);
+            Count--;
         }
         #endregion IList<T> Methods
 

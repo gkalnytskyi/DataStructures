@@ -200,6 +200,22 @@ namespace DataStructuresTest
         }
 
         [Test]
+        public void Remove_very_last_item_from_the_node([Values(1,9)] int count)
+        {
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
+
+            // Act
+            bool result = _List.Remove(count);
+
+            // Assert
+            Assert.That(result, Is.True);
+            Assert.That(_List.Count, Is.EqualTo(count - 1));
+            var expectedResult = Enumerable.Range(1, count - 1);
+            Assert.That(_List, Is.EquivalentTo(expectedResult));
+        }
+
+        [Test]
         public void Remove_Several_Consequent_Items_from_UnrolledLinkedList()
         {
             // Arrange
