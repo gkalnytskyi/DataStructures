@@ -9,6 +9,9 @@ namespace DataStructures
         public int Count { get; private set; }
         public readonly T[] Data;
 
+        private int HalfCapacity { get { return (Data.Length + 1) / 2; } }
+
+        #region Constructors
         public UnrolledLinkedListNode(int capacity)
         {
             Data = new T[capacity];
@@ -35,21 +38,14 @@ namespace DataStructures
             T firstElement) : this(capacity, previous)
         {
             Data[0] = firstElement;
-            Count += 1;
+            Count++;
         }
+        #endregion Constructors
 
-        private int HalfCapacity { get { return (Data.Length + 1) / 2; } }
-
+        #region Public Methods
         public bool IsEmpty()
         {
             return Count == 0;
-        }
-
-        public void ByPassNext()
-        {
-            var newNext = Next.Next;
-            newNext.Previous = this;
-            Next = newNext;
         }
 
         public bool TryAddItem(T item)
@@ -57,7 +53,7 @@ namespace DataStructures
             if (Count < Data.Length)
             {
                 Data[Count] = item;
-                Count += 1;
+                Count++;
                 return true;
             }
             return false;
@@ -83,52 +79,6 @@ namespace DataStructures
         public bool Contains(T item)
         {
             return (IndexOf(item) > -1);
-        }
-
-        private void ShiftItemsLeft(int sourceIndex, int destinationIndex)
-        {
-            if (destinationIndex > sourceIndex)
-                throw new InvalidOperationException("This shifts items left");
-
-            int idxDifference = sourceIndex - destinationIndex;
-            int length = Count - sourceIndex;
-
-            // TODO: think about the special case of length == 0,
-            // when the last element in the node is removed
-
-            Array.Copy(Data, sourceIndex, Data, destinationIndex, length);
-            Array.Clear(Data, destinationIndex + length, idxDifference);
-            Count -= idxDifference;
-        }
-
-        private void PullItemsFromNext()
-        {
-            if (Next == null)
-                return;
-
-            if (Count > HalfCapacity)
-                return;
-
-            TransferItemsFromNextUntilHalfFull();
-
-            var nextCount = Next.Count;
-            int remainingCapacity = Data.Length - Count;
-
-            if (nextCount <= remainingCapacity)
-            {
-                Array.Copy(Next.Data, 0, Data, Count, nextCount);
-                ByPassNext();
-            }
-        }
-
-        private void TransferItemsFromNextUntilHalfFull()
-        {
-            int itemsShortToHalfFull = HalfCapacity - Count;
-            int numberOfItemsToTransfer = Math.Min(itemsShortToHalfFull, Next.Count);
-            Array.Copy(Next.Data, 0, Data, Count, numberOfItemsToTransfer);
-            Count += numberOfItemsToTransfer;
-
-            Next.ShiftItemsLeft(numberOfItemsToTransfer, 0);
         }
 
         public void Insert(int index, T item)
@@ -161,23 +111,79 @@ namespace DataStructures
                 nodeInsertTo.Insert(index, item);
             }
         }
+        #endregion Public Methods
 
-        private void ShiftItemsRight(int sourceIndex, int destinationIndex)
-        {
-            if (destinationIndex < sourceIndex)
-                throw new InvalidOperationException("This shifts items left");
 
-            int length = Count - sourceIndex;
-            Array.Copy(Data, sourceIndex, Data, destinationIndex, length);
-            Count += destinationIndex - sourceIndex;
-        }
-
+        #region Private Methods
         private void CreateNext()
         {
             var newNode = new UnrolledLinkedListNode<T>(Data.Length);
             newNode.Next = Next;
             newNode.Previous = this;
             Next = newNode;
+        }
+
+        private void ByPassNext()
+        {
+            var newNext = Next.Next;
+            newNext.Previous = this;
+            Next = newNext;
+        }
+
+        private void ShiftItemsRight(int sourceIndex, int destinationIndex)
+        {
+            if (destinationIndex < sourceIndex)
+                throw new InvalidOperationException("This shifts items right");
+
+            int length = Count - sourceIndex;
+            Array.Copy(Data, sourceIndex, Data, destinationIndex, length);
+            Count += destinationIndex - sourceIndex;
+        }
+
+        private void ShiftItemsLeft(int sourceIndex, int destinationIndex)
+        {
+            if (destinationIndex > sourceIndex)
+                throw new InvalidOperationException("This shifts items left");
+
+            int idxDifference = sourceIndex - destinationIndex;
+            int length = Count - sourceIndex;
+
+            // TODO: think about the special case of length == 0,
+            // when the last element in the node is removed
+
+            Array.Copy(Data, sourceIndex, Data, destinationIndex, length);
+            Array.Clear(Data, destinationIndex + length, idxDifference);
+            Count -= idxDifference;
+        }
+
+        private void PullItemsFromNext()
+        {
+            if (Next == null)
+                return;
+
+            if (Count > HalfCapacity)
+                return;
+
+            PullItemsFromNextUntilHalfFull();
+
+            var nextCount = Next.Count;
+            int remainingCapacity = Data.Length - Count;
+
+            if (nextCount <= remainingCapacity)
+            {
+                Array.Copy(Next.Data, 0, Data, Count, nextCount);
+                ByPassNext();
+            }
+        }
+
+        private void PullItemsFromNextUntilHalfFull()
+        {
+            int itemsShortToHalfFull = HalfCapacity - Count;
+            int numberOfItemsToTransfer = Math.Min(itemsShortToHalfFull, Next.Count);
+            Array.Copy(Next.Data, 0, Data, Count, numberOfItemsToTransfer);
+            Count += numberOfItemsToTransfer;
+
+            Next.ShiftItemsLeft(numberOfItemsToTransfer, 0);
         }
 
         private void PushItemsToNext(int startIndex)
@@ -189,5 +195,6 @@ namespace DataStructures
             Array.Clear(Data, startIndex, length);
             Count -= length;
         }
+        #endregion Private Methods
     }
 }

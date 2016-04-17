@@ -327,6 +327,21 @@ namespace DataStructuresTest
         }
 
         [Test]
+        public void AddFirst_adds_item_to_the_begining_of_the_list(
+            [Values(0, 7, 8, 9)] int count)
+        {
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
+
+            // Act
+            _List.Insert(0, 42);
+
+            // Assert
+            Assert.That(_List.Count, Is.EqualTo(count + 1));
+            Assert.That(_List, Is.EquivalentTo(Enumerable.Range(42, 1).Concat(Enumerable.Range(1, count))));
+        }
+
+        [Test]
         public void Items_get_throws_when_index_is_out_of_range([Values(-1, 15, 16)] int index)
         {
             // Arrange
@@ -399,19 +414,19 @@ namespace DataStructuresTest
             Assert.Throws<ArgumentOutOfRangeException>(() => _List.Insert(index, 42));
         }
 
-
         [Test]
-        public void Insert_item_at_the_begining_of_list()
+        public void Insert_Item_to_the_begining_of_the_list(
+            [Values(0, 7, 8, 9)] int count)
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, 17);
+            _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
 
             // Act
             _List.Insert(0, 42);
 
             // Assert
-            Assert.That(_List.Count, Is.EqualTo(18));
-            Assert.That(_List, Is.EquivalentTo(Enumerable.Range(42, 1).Concat(Enumerable.Range(1, 17))));
+            Assert.That(_List.Count, Is.EqualTo(count + 1));
+            Assert.That(_List, Is.EquivalentTo(Enumerable.Range(42, 1).Concat(Enumerable.Range(1, count))));
         }
 
         [Test]

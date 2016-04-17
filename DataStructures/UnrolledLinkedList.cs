@@ -11,6 +11,8 @@ namespace DataStructures
         private UnrolledLinkedListNode<T> _FirstNode;
         private UnrolledLinkedListNode<T> _LastNode;
 
+
+        #region Constructors
         public UnrolledLinkedList() : this(CAPASITY) { }
 
         public UnrolledLinkedList(int nodeCapasity)
@@ -30,6 +32,8 @@ namespace DataStructures
         {
             AddRange(collection);
         }
+        #endregion Constructors
+
 
         #region ICollection<T> Properties
         public int Count { get; private set; }
@@ -42,6 +46,7 @@ namespace DataStructures
             }
         }
         #endregion
+
 
         #region IList<T> Properties
         public T this[int index]
@@ -66,23 +71,8 @@ namespace DataStructures
             if (index < 0 || index > (Count - 1))
                 throw new IndexOutOfRangeException();
         }
-
-        private UnrolledLinkedListNode<T> FindNodeAndIndex(ref int index)
-        {
-            var currentNode = _FirstNode;
-            do
-            {
-                if (index < currentNode.Count)
-                {
-                    break;
-                }
-                index -= currentNode.Count;
-                currentNode = currentNode.Next;
-            }
-            while (currentNode != null);
-            return currentNode;
-        }
         #endregion
+
 
         #region IEnumerable<T> Methods
         /// <summary>
@@ -100,13 +90,20 @@ namespace DataStructures
         }
         #endregion IEnumerable<T> Methods
 
-        #region ICollection<T> Methods
-        /// <summary>
-        /// Adds an item to the end of the collection
-        /// <param name="item"></param>
-        public void Add(T item)
+
+        #region Public Non-Interface Methods
+        public void AddRange(IEnumerable<T> range)
         {
-            AddLast(item);
+            foreach (var item in range)
+            {
+                Add(item);
+            }
+        }
+
+        public void AddFirst(T item)
+        {
+            _FirstNode.Insert(0, item);
+            Count += 1;
         }
 
         public void AddLast(T item)
@@ -118,6 +115,17 @@ namespace DataStructures
                 _LastNode = newNode;
             }
             Count += 1;
+        }
+        #endregion Public Non-Interface Methods
+
+
+        #region ICollection<T> Methods
+        /// <summary>
+        /// Adds an item to the end of the collection
+        /// <param name="item"></param>
+        public void Add(T item)
+        {
+            AddLast(item);
         }
 
         /// <summary>
@@ -228,6 +236,7 @@ namespace DataStructures
         }
         #endregion ICollection<T> Methods
 
+
         #region IList<T> Methods
         public int IndexOf(T item)
         {
@@ -265,7 +274,11 @@ namespace DataStructures
                 AddLast(item);
                 return;
             }
-
+            if (index == 0)
+            {
+                AddFirst(item);
+                return;
+            }
             var node = FindNodeAndIndex(ref index);
             node.Insert(index, item);
             Count += 1;
@@ -285,17 +298,23 @@ namespace DataStructures
         }
         #endregion IList<T> Methods
 
-        public void AddRange(IEnumerable<T> range)
-        {
-            foreach (var item in range)
-            {
-                Add(item);
-            }
-        }
 
-        public void AddFirst(T item)
+        #region Private Methods
+        private UnrolledLinkedListNode<T> FindNodeAndIndex(ref int index)
         {
-            Insert(0, item);
+            var currentNode = _FirstNode;
+            do
+            {
+                if (index < currentNode.Count)
+                {
+                    break;
+                }
+                index -= currentNode.Count;
+                currentNode = currentNode.Next;
+            }
+            while (currentNode != null);
+            return currentNode;
         }
+        #endregion Private Methods
     }
 }
