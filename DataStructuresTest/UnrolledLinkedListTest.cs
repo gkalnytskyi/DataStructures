@@ -285,7 +285,8 @@ namespace DataStructuresTest
 
         [Test, Sequential]
         public void CopyTo_throws_exception_if_data_does_not_fit_into_array_starting_at_index(
-            [Values(9, 5)] int arraySize, [Values(2, 0)] int startIndex)
+            [Values(9, 5)] int arraySize,
+            [Values(2, 0)] int startIndex)
         {
             // Arrange
             _List = TestUtils.GetUnrolledLinkedListWithItems(4, 9);
@@ -498,7 +499,8 @@ namespace DataStructuresTest
         }
 
         [Test]
-        public void Delete_item_from_list_by_index_from_not_full_node([Values(8, 9)] int nodeCapacity)
+        public void Delete_item_from_list_by_index_from_not_full_node(
+            [Values(8, 9)] int nodeCapacity)
         {
             // Arrange
             const int count = 15;

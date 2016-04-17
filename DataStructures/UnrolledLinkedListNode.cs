@@ -6,7 +6,7 @@ namespace DataStructures
     {
         public UnrolledLinkedListNode<T> Previous;
         public UnrolledLinkedListNode<T> Next;
-        public int Count { get; set; }
+        public int Count { get; private set; }
         public readonly T[] Data;
 
         public UnrolledLinkedListNode(int capacity)
@@ -133,8 +133,33 @@ namespace DataStructures
 
         public void Insert(int index, T item)
         {
-            ShiftItemsRight(index, index + 1);
-            Data[index] = item;
+            if (Count < Data.Length)
+            {
+                ShiftItemsRight(index, index + 1);
+                Data[index] = item;
+            }
+            else
+            {
+                CreateNext();
+                int midIndex = Data.Length / 2;
+
+                UnrolledLinkedListNode<T> nodeInsertTo = null;
+
+                if (index > midIndex)
+                {
+                    nodeInsertTo = Next;
+                    midIndex += 1;
+                    index -= midIndex;
+                }
+                else
+                {
+                    nodeInsertTo = this;
+                }
+
+                PushItemsToNext(midIndex);
+
+                nodeInsertTo.Insert(index, item);
+            }
         }
 
         private void ShiftItemsRight(int sourceIndex, int destinationIndex)
@@ -145,6 +170,24 @@ namespace DataStructures
             int length = Count - sourceIndex;
             Array.Copy(Data, sourceIndex, Data, destinationIndex, length);
             Count += destinationIndex - sourceIndex;
+        }
+
+        private void CreateNext()
+        {
+            var newNode = new UnrolledLinkedListNode<T>(Data.Length);
+            newNode.Next = Next;
+            newNode.Previous = this;
+            Next = newNode;
+        }
+
+        private void PushItemsToNext(int startIndex)
+        {
+            var length = Count - startIndex;
+            Array.Copy(Data, startIndex, Next.Data, 0, length);
+            Next.Count += length;
+
+            Array.Clear(Data, startIndex, length);
+            Count -= length;
         }
     }
 }

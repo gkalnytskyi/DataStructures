@@ -265,46 +265,9 @@ namespace DataStructures
                 AddLast(item);
                 return;
             }
-            InsertAt(index, item);
-        }
 
-        private void InsertAt(int index, T item)
-        {
             var node = FindNodeAndIndex(ref index);
-            if (node.Count < _NodeCapasity)
-            {
-                node.Insert(index, item);
-            }
-            else
-            {
-                var newNode = new UnrolledLinkedListNode<T>(_NodeCapasity);
-                newNode.Next = node.Next;
-                node.Next = newNode;
-                newNode.Previous = node;
-                int midIndex = _NodeCapasity / 2;
-
-                UnrolledLinkedListNode<T> nodeInsertTo = null;
-
-                if (index > midIndex)
-                {
-                    nodeInsertTo = newNode;
-                    midIndex += 1;
-                    index -= midIndex;
-                }
-                else
-                {
-                    nodeInsertTo = node;
-                }
-
-                var length = node.Count - midIndex;
-                Array.Copy(node.Data, midIndex, newNode.Data, 0, length);
-                newNode.Count += length;
-
-                Array.Clear(node.Data, midIndex, length);
-                node.Count -= length;
-
-                nodeInsertTo.Insert(index, item);
-            }
+            node.Insert(index, item);
             Count += 1;
         }
 
