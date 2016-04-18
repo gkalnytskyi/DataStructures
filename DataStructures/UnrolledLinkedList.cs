@@ -6,29 +6,29 @@ namespace DataStructures
 {
     public partial class UnrolledLinkedList<T> : IList<T>, ICollection<T>, IEnumerable<T>
     {
-        private const int CAPASITY = 16;
-        private readonly int _NodeCapasity;
+        public const int CAPACITY = 16;
+        private readonly int _NodeCapacity;
         private UnrolledLinkedListNode<T> _FirstNode;
         private UnrolledLinkedListNode<T> _LastNode;
 
 
         #region Constructors
-        public UnrolledLinkedList() : this(CAPASITY) { }
+        public UnrolledLinkedList() : this(CAPACITY) { }
 
-        public UnrolledLinkedList(int nodeCapasity)
+        public UnrolledLinkedList(int nodeCapacity)
         {
-            if (nodeCapasity < 1)
+            if (nodeCapacity < 1)
             {
-                throw new ArgumentOutOfRangeException("NodeCapasity cannot be less than 1");
+                throw new ArgumentOutOfRangeException("NodeCapacity cannot be less than 1");
             }
-            _NodeCapasity = nodeCapasity;
-            _LastNode = _FirstNode = new UnrolledLinkedListNode<T>(this._NodeCapasity);
+            _NodeCapacity = nodeCapacity;
+            _LastNode = _FirstNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
             Count = 0;
         }
 
         public UnrolledLinkedList(
-            int nodeCapasity,
-            IEnumerable<T> collection) : this(nodeCapasity)
+            int nodeCapacity,
+            IEnumerable<T> collection) : this(nodeCapacity)
         {
             AddRange(collection);
         }
@@ -169,7 +169,7 @@ namespace DataStructures
         /// </summary>
         public void Clear()
         {
-            _LastNode = _FirstNode = new UnrolledLinkedListNode<T>(_NodeCapasity);
+            _LastNode = _FirstNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
             Count = 0;
         }
 
