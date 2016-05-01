@@ -6,14 +6,15 @@ namespace DataStructures
 {
     public partial class UnrolledLinkedList<T> : IList<T>, ICollection<T>, IEnumerable<T>
     {
-        public const int CAPACITY = 16;
+        public const int NODE_CAPACITY = 16;
         private readonly int _NodeCapacity;
+        private int _Count = 0;
         private UnrolledLinkedListNode<T> _FirstNode;
         private UnrolledLinkedListNode<T> _LastNode;
 
 
         #region Constructors
-        public UnrolledLinkedList() : this(CAPACITY) { }
+        public UnrolledLinkedList() : this(NODE_CAPACITY) { }
 
         public UnrolledLinkedList(int nodeCapacity)
         {
@@ -23,7 +24,7 @@ namespace DataStructures
             }
             _NodeCapacity = nodeCapacity;
             _LastNode = _FirstNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
-            Count = 0;
+            _Count = 0;
         }
 
         public UnrolledLinkedList(
@@ -36,7 +37,7 @@ namespace DataStructures
 
 
         #region ICollection<T> Properties
-        public int Count { get; private set; }
+        public int Count { get { return _Count; } }
 
         public bool IsReadOnly
         {
@@ -68,7 +69,7 @@ namespace DataStructures
 
         private void CheckIndex(int index)
         {
-            if (index < 0 || index > (Count - 1))
+            if (index < 0 || index > (_Count - 1))
                 throw new IndexOutOfRangeException();
         }
         #endregion
@@ -103,7 +104,7 @@ namespace DataStructures
         public void AddFirst(T item)
         {
             _FirstNode.Insert(0, item);
-            Count++;
+            _Count++;
         }
 
         public void AddLast(T item)
@@ -113,8 +114,22 @@ namespace DataStructures
             {
                 _LastNode = _LastNode.Next;
             }
-            Count++;
+            _Count++;
         }
+
+        //public void InsertRange(int index, IEnumerable<T> collection)
+        //{
+        //    if (collection == null)
+        //    {
+        //        throw new ArgumentNullException("Collection cannot be null");
+        //    }
+
+        //    CheckIndex(index);
+
+        //    int nodeIndex = index;
+        //    UnrolledLinkedListNode<T> startNode = FindNodeAndIndex(ref nodeIndex);
+        //    startNode.InsertRange(index, collection);
+        //}
         #endregion Public Non-Interface Methods
 
 
@@ -149,7 +164,7 @@ namespace DataStructures
                 {
                     found = true;
                     currentNode.RemoveAt(index_found);
-                    Count--;
+                    _Count--;
                     if (currentNode.IsEmpty() && currentNode.Previous != null)
                     {
                         var prevNode = currentNode.Previous;
@@ -160,7 +175,10 @@ namespace DataStructures
                 currentNode = currentNode.Next;
             }
             while ((currentNode != null));
-
+            if (found)
+            {
+                FindNewLastNode();
+            }
             return found;
         }
 
@@ -170,7 +188,7 @@ namespace DataStructures
         public void Clear()
         {
             _LastNode = _FirstNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
-            Count = 0;
+            _Count = 0;
         }
 
         /// <summary>
@@ -254,13 +272,13 @@ namespace DataStructures
 
         public void Insert(int index, T item)
         {
-            if (index < 0 || index > Count)
+            if (index < 0 || index > _Count)
             {
                 throw new ArgumentOutOfRangeException(
                       string.Format("Index cannot be less than 0, " +
-                                    "or greater than Count: {0}", Count));
+                                    "or greater than Count: {0}", _Count));
             }
-            if (index == Count)
+            if (index == _Count)
             {
                 AddLast(item);
                 return;
@@ -272,20 +290,21 @@ namespace DataStructures
             }
             var node = FindNodeAndIndex(ref index);
             node.Insert(index, item);
-            Count++;
+            _Count++;
         }
 
         public void RemoveAt(int index)
         {
-            if (index < 0 || index > (Count - 1))
+            if (index < 0 || index > (_Count - 1))
             {
                 throw new ArgumentOutOfRangeException(
                       string.Format("Index cannot be less than 0, " +
-                                    "or greater than Count: {0}", Count));
+                                    "or greater than Count: {0}", _Count));
             }
             var node = FindNodeAndIndex(ref index);
             node.RemoveAt(index);
-            Count--;
+            _Count--;
+            FindNewLastNode();
         }
         #endregion IList<T> Methods
 
@@ -305,6 +324,29 @@ namespace DataStructures
             }
             while (currentNode != null);
             return currentNode;
+        }
+
+        private void FindNewLastNode()
+        {
+            if (_LastNode.IsEmpty())
+            {
+                while (_LastNode.Previous != null)
+                {
+                    _LastNode = _LastNode.Previous;
+                    if (!_LastNode.IsEmpty())
+                    {
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                while (_LastNode.Next != null)
+                {
+                    _LastNode = _LastNode.Next;
+                }
+            }
+            
         }
         #endregion Private Methods
     }

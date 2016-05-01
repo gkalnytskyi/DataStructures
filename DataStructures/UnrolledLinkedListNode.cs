@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace DataStructures
 {
@@ -92,6 +93,11 @@ namespace DataStructures
             }
         }
 
+        //internal void InsertRange(int index, IEnumerable<T> collection)
+        //{
+
+        //}
+
         internal void ByPassNext()
         {
             if (Next == null)
@@ -155,6 +161,8 @@ namespace DataStructures
             if (nextCount <= remainingCapacity)
             {
                 Array.Copy(Next.Data, 0, Data, Count, nextCount);
+                Count += nextCount;
+                Next.Count = 0;
                 ByPassNext();
             }
         }
@@ -163,6 +171,8 @@ namespace DataStructures
         {
             int itemsShortToHalfFull = HalfCapacity - Count;
             int numberOfItemsToTransfer = Math.Min(itemsShortToHalfFull, Next.Count);
+            if (numberOfItemsToTransfer == 0)
+                return;
             Array.Copy(Next.Data, 0, Data, Count, numberOfItemsToTransfer);
             Count += numberOfItemsToTransfer;
 

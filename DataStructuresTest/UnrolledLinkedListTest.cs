@@ -253,6 +253,21 @@ namespace DataStructuresTest
         }
 
         [Test]
+        public void Remove_and_add_element_at_the_end_of_the_list()
+        {
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(8, 9);
+
+            // Act
+            _List.Remove(9);
+            _List.AddLast(10);
+
+            // Assert
+            var expectedCollection = Enumerable.Range(1, 8).Concat(Enumerable.Range(10,1));
+            Assert.That(_List, Is.EquivalentTo(expectedCollection));
+        }
+
+        [Test]
         public void Contains_does_not_find_element_when_it_is_not_in_the_collection()
         {
             // Arrange
@@ -550,5 +565,63 @@ namespace DataStructuresTest
             Assert.That(_List.Count, Is.EqualTo(count - initiallyRemoved - 1));
             Assert.That(_List, Is.EquivalentTo(expectedResult));
         }
+
+        [Test]
+        public void RemoveAt_and_add_element_at_the_end_of_the_list()
+        {
+            // Arrange
+            _List = TestUtils.GetUnrolledLinkedListWithItems(8, 9);
+
+            // Act
+            for (int i = 0; i < 5; i++)
+            {
+                _List.RemoveAt(3);
+            }
+            _List.AddLast(10);
+
+            // Assert
+            var expectedCollection = Enumerable.Range(1, 3).
+                Concat(Enumerable.Range(9, 2));
+            Assert.That(_List, Is.EquivalentTo(expectedCollection));
+        }
+
+        //[Test]
+        //public void InsertRange_throws_ArgumentOutOfRangeException_for_invalid_index(
+        //    [Values(-1,9,15)] int index)
+        //{
+        //    // Arrange
+        //    _List = TestUtils.GetUnrolledLinkedListWithItems(8, 7);
+
+        //    // Act Assert
+        //    Assert.Throws<ArgumentOutOfRangeException>(() => _List.InsertRange(index, Enumerable.Range(0, 5)));
+        //}
+
+        //[Test]
+        //public void InsertRange_throws_ArgumentNullException_for_null_collection()
+        //{
+        //    // Arrange
+        //    _List = TestUtils.GetUnrolledLinkedListWithItems(8, 4);
+        //    // Act Assert
+        //    Assert.Throws<ArgumentNullException>(() => _List.InsertRange(4, null));
+        //}
+
+        //[Test, Sequential]
+        //public void InsertRange_inserts_items_in_correct_order(
+        //    [Values(0, 3, 3, 5, 6, 8, 16)] int count,
+        //    [Values(0, 3, 3, 0, 4, 8, 13)] int index,
+        //    [Values(5, 5, 8, 5, 2, 2,  6)] int insertCollectionCount)
+        //{
+        //    // Arrange
+        //    _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
+
+        //    // Act
+        //    _List.InsertRange(index, Enumerable.Range(0, insertCollectionCount));
+
+        //    // Assert
+        //    var expectedCollection = Enumerable.Range(1, index).
+        //        Concat(Enumerable.Range(0, insertCollectionCount)).
+        //        Concat(Enumerable.Range(index + 1, count - index));
+        //    Assert.That(_List, Is.EquivalentTo(expectedCollection));
+        //}
     }
 }
