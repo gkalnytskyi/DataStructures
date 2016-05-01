@@ -54,23 +54,25 @@ namespace DataStructures
         {
             get
             {
-                CheckIndex(index);
+                CheckIndex(index, _Count - 1);
                 var node = FindNodeAndIndex(ref index);
                 return node.Data[index];
             }
 
             set
             {
-                CheckIndex(index);
+                CheckIndex(index, _Count - 1);
                 var node = FindNodeAndIndex(ref index);
                 node.Data[index] = value;
             }
         }
 
-        private void CheckIndex(int index)
+        private void CheckIndex(int index, int maxValue)
         {
-            if (index < 0 || index > (_Count - 1))
-                throw new IndexOutOfRangeException();
+            if (index < 0 || index > maxValue)
+                throw new IndexOutOfRangeException(
+                      string.Format("Index cannot be less than 0, " +
+                                    "or greater than Count: {0}", maxValue));
         }
         #endregion
 
@@ -110,11 +112,8 @@ namespace DataStructures
         public void AddLast(T item)
         {
             _LastNode.Add(item);
-            if (_LastNode.Next != null)
-            {
-                _LastNode = _LastNode.Next;
-            }
             _Count++;
+            FindNewLastNode();
         }
 
         //public void InsertRange(int index, IEnumerable<T> collection)
@@ -272,12 +271,7 @@ namespace DataStructures
 
         public void Insert(int index, T item)
         {
-            if (index < 0 || index > _Count)
-            {
-                throw new ArgumentOutOfRangeException(
-                      string.Format("Index cannot be less than 0, " +
-                                    "or greater than Count: {0}", _Count));
-            }
+            CheckIndex(index, _Count);
             if (index == _Count)
             {
                 AddLast(item);
@@ -291,16 +285,12 @@ namespace DataStructures
             var node = FindNodeAndIndex(ref index);
             node.Insert(index, item);
             _Count++;
+            FindNewLastNode();
         }
 
         public void RemoveAt(int index)
         {
-            if (index < 0 || index > (_Count - 1))
-            {
-                throw new ArgumentOutOfRangeException(
-                      string.Format("Index cannot be less than 0, " +
-                                    "or greater than Count: {0}", _Count));
-            }
+            CheckIndex(index, _Count - 1);
             var node = FindNodeAndIndex(ref index);
             node.RemoveAt(index);
             _Count--;

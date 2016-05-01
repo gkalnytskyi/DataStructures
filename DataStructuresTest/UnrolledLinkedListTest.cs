@@ -434,7 +434,7 @@ namespace DataStructuresTest
         }
 
         [Test, Sequential]
-        public void Insert_throws_ArgumentOutOfRangeException_for_invalid_index(
+        public void Insert_throws_IndexOutOfRangeException_for_invalid_index(
             [Values(-1, 18, -100, 13)] int index,
             [Values(7, 15, 6, 11)] int listCount)
         {
@@ -442,7 +442,7 @@ namespace DataStructuresTest
             _List = TestUtils.GetUnrolledLinkedListWithItems(8, listCount);
 
             // Act, Assert
-            Assert.Throws<ArgumentOutOfRangeException>(() => _List.Insert(index, 42));
+            Assert.Throws<IndexOutOfRangeException>(() => _List.Insert(index, 42));
         }
 
         [Test]
@@ -514,8 +514,27 @@ namespace DataStructuresTest
             Assert.That(_List, Is.EquivalentTo(expectedResult));
         }
 
+        [Test]
+        public void Insert_updates_LastNode()
+        {
+            // Arrange
+            const int count = 8;
+            _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
+
+            // Act
+            _List.Insert(8, 42);
+            _List.AddLast(11);
+
+            // Assert
+            Assert.That(_List.Count, Is.EqualTo(count + 2));
+            var expectedResult = Enumerable.Range(1, count).
+                                    Concat(Enumerable.Range(42, 1)).
+                                    Concat(Enumerable.Range(11, 1));
+            Assert.That(_List, Is.EquivalentTo(expectedResult));
+        }
+
         [Test, Sequential]
-        public void RemoveAt_throws_ArgumentOutOfRangeException_for_invalid_index(
+        public void RemoveAt_throws_IndexOutOfRangeException_for_invalid_index(
             [Values(-1, 18, -100, 13, 15, 0)] int index,
             [Values(7, 15, 6, 11, 15, 0)] int count)
         {
@@ -523,7 +542,7 @@ namespace DataStructuresTest
             _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
 
             // Act, Assert
-            Assert.Throws<ArgumentOutOfRangeException>(() => _List.RemoveAt(index));
+            Assert.Throws<IndexOutOfRangeException>(() => _List.RemoveAt(index));
         }
 
         [Test]
