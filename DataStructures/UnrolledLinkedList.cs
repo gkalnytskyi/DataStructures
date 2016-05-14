@@ -116,19 +116,20 @@ namespace DataStructures
             FindNewLastNode();
         }
 
-        //public void InsertRange(int index, IEnumerable<T> collection)
-        //{
-        //    if (collection == null)
-        //    {
-        //        throw new ArgumentNullException("Collection cannot be null");
-        //    }
+        public void InsertRange(int index, IEnumerable<T> collection)
+        {
+            if (collection == null)
+            {
+                throw new ArgumentNullException("Collection cannot be null");
+            }
 
-        //    CheckIndex(index);
+            CheckIndex(index, _Count);
 
-        //    int nodeIndex = index;
-        //    UnrolledLinkedListNode<T> startNode = FindNodeAndIndex(ref nodeIndex);
-        //    startNode.InsertRange(index, collection);
-        //}
+            int nodeIndex = index;
+            UnrolledLinkedListNode<T> startNode = FindNodeAndIndex(ref nodeIndex);
+            _Count += startNode.InsertRange(nodeIndex, collection);
+            FindNewLastNode();
+        }
         #endregion Public Non-Interface Methods
 
 
@@ -305,7 +306,7 @@ namespace DataStructures
             var currentNode = _FirstNode;
             do
             {
-                if (index < currentNode.Count)
+                if (index < currentNode.Count || index == 0)
                 {
                     break;
                 }
@@ -313,30 +314,25 @@ namespace DataStructures
                 currentNode = currentNode.Next;
             }
             while (currentNode != null);
+            if (currentNode == null)
+            {
+                currentNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
+                _LastNode.Append(currentNode);
+                _LastNode = currentNode;
+            }
             return currentNode;
         }
 
         private void FindNewLastNode()
         {
-            if (_LastNode.IsEmpty())
+            while (_LastNode.IsEmpty() && _LastNode.Previous != null)
             {
-                while (_LastNode.Previous != null)
-                {
-                    _LastNode = _LastNode.Previous;
-                    if (!_LastNode.IsEmpty())
-                    {
-                        break;
-                    }
-                }
+                _LastNode = _LastNode.Previous;
             }
-            else
+            while (_LastNode.Next != null)
             {
-                while (_LastNode.Next != null)
-                {
-                    _LastNode = _LastNode.Next;
-                }
+                _LastNode = _LastNode.Next;
             }
-            
         }
         #endregion Private Methods
     }

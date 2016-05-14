@@ -64,39 +64,94 @@ namespace DataStructures
 
         internal void Insert(int index, T item)
         {
-            if (Count < Data.Length)
+            var targetNode = this;
+            if (Count == Data.Length)
             {
-                ShiftItemsRight(index, index + 1);
-                Data[index] = item;
-            }
-            else
-            {
-                CreateNext();
                 int midIndex = Data.Length / 2;
-
-                UnrolledLinkedListNode<T> nodeInsertTo = null;
-
-                if (index > midIndex)
+                var condition = index > midIndex;
+                if (condition)
                 {
-                    nodeInsertTo = Next;
                     midIndex += 1;
                     index -= midIndex;
                 }
-                else
-                {
-                    nodeInsertTo = this;
-                }
 
-                PushItemsToNext(midIndex);
-
-                nodeInsertTo.Insert(index, item);
+                SplitAt(midIndex);
+                if (condition) targetNode = Next;
             }
+
+            targetNode.ShiftItemsRight(index, index + 1);
+            targetNode.Data[index] = item;
         }
 
-        //internal void InsertRange(int index, IEnumerable<T> collection)
-        //{
+        internal int InsertRange(int index, IEnumerable<T> collection)
+        {
+            int collectionLength = 0;
+            ICollection<T> c = collection as ICollection<T>;
+            var node = this;
+            if (c != null)
+            {
+                collectionLength = c.Count;
+                int remainingNodeItemsCount = node.Count - index;
 
-        //}
+                T[] newData = new T[c.Count + remainingNodeItemsCount];
+                c.CopyTo(newData, 0);
+
+                if (remainingNodeItemsCount > 0)
+                {
+                    Array.Copy(node.Data, index, newData, c.Count, remainingNodeItemsCount);
+                    node.Count -= remainingNodeItemsCount;
+                }
+
+                int startNewDataCopyIndex = 0;
+
+                while (startNewDataCopyIndex < newData.Length)
+                {
+                    var copyLength = Math.Min(
+                        node.Data.Length - node.Count,
+                        newData.Length - startNewDataCopyIndex);
+                    Array.Copy(newData, startNewDataCopyIndex, node.Data, node.Count, copyLength);
+                    node.Count += copyLength;
+                    startNewDataCopyIndex += copyLength;
+                    node = node.CreateNext();
+                }                
+            }
+            else
+            {
+                var enumerator = collection.GetEnumerator();
+                while (enumerator.MoveNext())
+                {
+                    node.Insert(index, enumerator.Current);
+                    collectionLength++;
+                    index = ++index % Data.Length;
+                    if (index > node.Count)
+                    {
+                        index -= node.Count;
+                        node = node.Next;
+                        continue;
+                    }
+                    if (index == 0)
+                    {
+                        if (node.Next == null)
+                            node.CreateNext();
+                        node = node.Next;
+                    }
+                }
+            }
+            if (node.IsEmpty())
+            {
+                node = node.Previous;
+                node.ByPassNext();
+            }
+            node.PullItemsFromNext();
+            return collectionLength;
+        }
+
+        internal void Append(UnrolledLinkedListNode<T> node)
+        {
+            if (node != null)
+                node.Previous = this;
+            Next = node;
+        }
 
         internal void ByPassNext()
         {
@@ -111,12 +166,18 @@ namespace DataStructures
 
 
         #region Private Methods
-        private void CreateNext()
+        private UnrolledLinkedListNode<T> CreateNext()
         {
             var newNode = new UnrolledLinkedListNode<T>(Data.Length);
-            newNode.Next = Next;
-            newNode.Previous = this;
-            Next = newNode;
+            newNode.Append(Next);
+            Append(newNode);
+            return newNode;
+        }
+
+        private void SplitAt(int index)
+        {
+            CreateNext();
+            PushItemsToNext(index);
         }
 
         private void ShiftItemsRight(int sourceIndex, int destinationIndex)
