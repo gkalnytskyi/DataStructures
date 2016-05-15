@@ -44,9 +44,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TestUtils.cs" />
-    <Compile Include="UnrolledLinkedListEnumeratorTest.cs" />
+    <Compile Include="UnrolledLinkedListCopyToTests.cs" />
+    <Compile Include="UnrolledLinkedListEnumeratorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UnrolledLinkedListTest.cs" />
+    <Compile Include="UnrolledLinkedListInsertItemTests.cs" />
+    <Compile Include="UnrolledLinkedListInsertRangeTests.cs" />
+    <Compile Include="UnrolledLinkedListItemIndexTests.cs" />
+    <Compile Include="UnrolledLinkedListRemoveItemTests.cs" />
+    <Compile Include="UnrolledLinkedListAddRemoveTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

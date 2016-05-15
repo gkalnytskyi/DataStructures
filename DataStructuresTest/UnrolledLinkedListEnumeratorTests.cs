@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace DataStructuresTest
 {
     [TestFixture]
-    public class UnrolledLinkedListEnumeratorTest
+    public class UnrolledLinkedListEnumeratorTests
     {
         UnrolledLinkedList<int> _List;
 
