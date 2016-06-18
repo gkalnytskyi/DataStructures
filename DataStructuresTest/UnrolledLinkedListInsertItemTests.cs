@@ -43,7 +43,7 @@ namespace DataStructuresTest
         }
 
         [Test]
-        public void Insert_item_at_position_Count([Values(0, 7, 15, 17)] int count)
+        public void Insert_item_at_the_end_of_the_list([Values(0, 7, 15, 17)] int count)
         {
             _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
 

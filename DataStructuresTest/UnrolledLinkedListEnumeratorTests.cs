@@ -47,6 +47,9 @@ namespace DataStructuresTest
             var canMove = enumerator.MoveNext();
             // Assert
             Assert.That(canMove, Is.False);
+            Assert.That(
+                delegate { var current = enumerator.Current; },
+                Throws.InvalidOperationException);
         }
 
         [Test]
@@ -60,7 +63,6 @@ namespace DataStructuresTest
             // Assert
             Assert.That(item, Is.EqualTo(5));
         }
-
 
         [Test]
         public void Enumerator_iterates_over_multiple_nodes()

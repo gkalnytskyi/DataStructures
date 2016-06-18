@@ -18,12 +18,24 @@ namespace DataStructures
             Data = new T[capacity];
             Count = 0;
         }
+
+        protected UnrolledLinkedListNode(UnrolledLinkedListNode<T> node)
+        {
+            Data = new T[node.Data.Length];
+            Array.Copy(node.Data, Data, node.Data.Length);
+            Count = node.Count;
+        }
         #endregion Constructors
 
         #region Methods
         internal bool IsEmpty()
         {
             return Count == 0;
+        }
+
+        internal UnrolledLinkedListNode<T> Clone()
+        {
+            return new UnrolledLinkedListNode<T>(this);
         }
 
         internal void Add(T item)
@@ -151,6 +163,13 @@ namespace DataStructures
             if (node != null)
                 node.Previous = this;
             Next = node;
+        }
+
+        internal void Prepend(UnrolledLinkedListNode<T> node)
+        {
+            if (node != null)
+                node.Next = this;
+            Previous = node;
         }
 
         internal void ByPassNext()
