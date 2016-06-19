@@ -64,6 +64,11 @@ namespace DataStructures
             return Count;
         }
 
+        internal void CopyTo(int index, T[] array, int arrayIndex, int count)
+        {
+            Array.Copy(Data, index, array, arrayIndex, count);
+        }
+
         internal int IndexOf(T item)
         {
             return Array.IndexOf(Data, item, 0, Count);

@@ -105,7 +105,7 @@ namespace DataStructuresTest
 
             // Act
             _List.Insert(8, 42);
-            _List.AddLast(11);
+            _List.Add(11);
 
             // Assert
             Assert.That(_List.Count, Is.EqualTo(count + 2));

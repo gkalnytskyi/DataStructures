@@ -207,7 +207,7 @@ namespace DataStructuresTest
 
             // Act
             _List.Remove(9);
-            _List.AddLast(10);
+            _List.Add(10);
 
             // Assert
             var expectedCollection = Enumerable.Range(1, 8).Concat(Enumerable.Range(10, 1));

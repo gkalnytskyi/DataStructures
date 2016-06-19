@@ -155,7 +155,7 @@ namespace DataStructuresTest
             {
                 _List.RemoveAt(3);
             }
-            _List.AddLast(10);
+            _List.Add(10);
 
             // Assert
             var expectedCollection = Enumerable.Range(1, 3).

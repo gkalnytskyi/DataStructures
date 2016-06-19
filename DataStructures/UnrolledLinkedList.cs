@@ -95,25 +95,13 @@ namespace DataStructures
 
 
         #region Public Non-Interface Methods
+        #region List-like methods
         public void AddRange(IEnumerable<T> range)
         {
             foreach (var item in range)
             {
                 Add(item);
             }
-        }
-
-        public void AddFirst(T item)
-        {
-            _FirstNode.Insert(0, item);
-            _Count++;
-        }
-
-        public void AddLast(T item)
-        {
-            _LastNode.Add(item);
-            _Count++;
-            FindNewLastNode();
         }
 
         public void InsertRange(int index, IEnumerable<T> collection)
@@ -130,6 +118,12 @@ namespace DataStructures
             _Count += startNode.InsertRange(nodeIndex, collection);
             FindNewLastNode();
         }
+
+        private void RemoveRange(int index, int count)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion List-like methods
         #endregion Public Non-Interface Methods
 
 
@@ -139,7 +133,9 @@ namespace DataStructures
         /// <param name="item"></param>
         public void Add(T item)
         {
-            AddLast(item);
+            _LastNode.Add(item);
+            _Count++;
+            FindNewLastNode();
         }
 
         /// <summary>
@@ -148,11 +144,6 @@ namespace DataStructures
         /// <param name="item"></param>
         /// <returns></returns>
         public bool Remove(T item)
-        {
-            return RemoveFirst(item);
-        }
-
-        private bool RemoveFirst(T item)
         {
             var found = false;
             var currentNode = _FirstNode;
@@ -275,12 +266,13 @@ namespace DataStructures
             CheckIndex(index, _Count);
             if (index == _Count)
             {
-                AddLast(item);
+                Add(item);
                 return;
             }
             if (index == 0)
             {
-                AddFirst(item);
+                _FirstNode.Insert(0, item);
+                _Count++;
                 return;
             }
             var node = FindNodeAndIndex(ref index);
