@@ -4,13 +4,13 @@ using System.Collections.Generic;
 
 namespace DataStructures
 {
-    public partial class UnrolledLinkedList<T> : IList<T>, ICollection<T>, IEnumerable<T>
+    public sealed partial class UnrolledLinkedList<T> : IList<T>, ICollection<T>, IEnumerable<T>
     {
         public const int NODE_CAPACITY = 16;
         private readonly int _NodeCapacity;
         private int _Count = 0;
-        private UnrolledLinkedListNode<T> _FirstNode;
-        private UnrolledLinkedListNode<T> _LastNode;
+        internal UnrolledLinkedListNode<T> _FirstNode;
+        internal UnrolledLinkedListNode<T> _LastNode;
 
 
         #region Constructors
@@ -54,25 +54,17 @@ namespace DataStructures
         {
             get
             {
-                CheckIndex(index, _Count - 1);
-                var node = FindNodeAndIndex(ref index);
-                return node.Data[index];
+                ValidateIndex(index, _Count - 1);
+                var nodeandindex = FindNodeAndNodeIndex(index);
+                return nodeandindex.Node.data[nodeandindex.Index];
             }
 
             set
             {
-                CheckIndex(index, _Count - 1);
-                var node = FindNodeAndIndex(ref index);
-                node.Data[index] = value;
+                ValidateIndex(index, _Count - 1);
+                var nodeandindex = FindNodeAndNodeIndex(index);
+                nodeandindex.Node.data[nodeandindex.Index] = value;
             }
-        }
-
-        private void CheckIndex(int index, int maxValue)
-        {
-            if (index < 0 || index > maxValue)
-                throw new IndexOutOfRangeException(
-                      string.Format("Index cannot be less than 0, " +
-                                    "or greater than Count: {0}", maxValue));
         }
         #endregion
 
@@ -93,49 +85,13 @@ namespace DataStructures
         }
         #endregion IEnumerable<T> Methods
 
-
-        #region Public Non-Interface Methods
-        #region List-like methods
-        public void AddRange(IEnumerable<T> range)
-        {
-            foreach (var item in range)
-            {
-                Add(item);
-            }
-        }
-
-        public void InsertRange(int index, IEnumerable<T> collection)
-        {
-            if (collection == null)
-            {
-                throw new ArgumentNullException("Collection cannot be null");
-            }
-
-            CheckIndex(index, _Count);
-
-            int nodeIndex = index;
-            UnrolledLinkedListNode<T> startNode = FindNodeAndIndex(ref nodeIndex);
-            _Count += startNode.InsertRange(nodeIndex, collection);
-            FindNewLastNode();
-        }
-
-        private void RemoveRange(int index, int count)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion List-like methods
-        #endregion Public Non-Interface Methods
-
-
         #region ICollection<T> Methods
         /// <summary>
         /// Adds an item to the end of the collection
         /// <param name="item"></param>
         public void Add(T item)
         {
-            _LastNode.Add(item);
-            _Count++;
-            FindNewLastNode();
+            Insert(_Count, item);
         }
 
         /// <summary>
@@ -146,30 +102,29 @@ namespace DataStructures
         public bool Remove(T item)
         {
             var found = false;
-            var currentNode = _FirstNode;
+            int nodeIndex = -1;
+            var node = _FirstNode;
 
-            do
+
+            while (node != null)
             {
-                var index_found = currentNode.IndexOf(item);
-                if (index_found > -1)
+                nodeIndex = node.IndexOf(item);
+
+                if (nodeIndex > -1)
                 {
                     found = true;
-                    currentNode.RemoveAt(index_found);
-                    _Count--;
-                    if (currentNode.IsEmpty() && currentNode.Previous != null)
-                    {
-                        var prevNode = currentNode.Previous;
-                        prevNode.ByPassNext();
-                    }
                     break;
                 }
-                currentNode = currentNode.Next;
+                node = node.next;
             }
-            while ((currentNode != null));
+
             if (found)
             {
-                FindNewLastNode();
+                node.RemoveAt(nodeIndex);
+                _Count--;
+                UpdateLastNode(node);
             }
+
             return found;
         }
 
@@ -191,12 +146,11 @@ namespace DataStructures
         {
             bool found = false;
             var currentNode = _FirstNode;
-            do
+            while (!found && currentNode != null)
             {
                 found = currentNode.Contains(item);
-                currentNode = currentNode.Next;
+                currentNode = currentNode.next;
             }
-            while (!found && currentNode != null);
             return found;
         }
 
@@ -226,13 +180,12 @@ namespace DataStructures
             }
 
             var currentNode = _FirstNode;
-            do
+            while (currentNode != null)
             {
-                int count = currentNode.CopyTo(array, arrayIndex);
-                arrayIndex += count;
-                currentNode = currentNode.Next;
+                currentNode.CopyTo(array, arrayIndex);
+                arrayIndex += currentNode.Count;
+                currentNode = currentNode.next;
             }
-            while (currentNode != null);
         }
         #endregion ICollection<T> Methods
 
@@ -240,90 +193,257 @@ namespace DataStructures
         #region IList<T> Methods
         public int IndexOf(T item)
         {
-            var currentNode = _FirstNode;
-            int index = 0;
             bool found = false;
-            do
+            int nodeIndex = -1;
+            var node = _FirstNode;
+            int itemsSearched = 0;
+
+            while (node != null && !found)
             {
-                var i = currentNode.IndexOf(item);
-                if (i < 0)
-                {
-                    index += currentNode.Count;
-                }
-                else
+                nodeIndex = node.IndexOf(item);
+                if (nodeIndex > -1)
                 {
                     found = true;
-                    index += i;
+                    break;
                 }
-                currentNode = currentNode.Next;
+                itemsSearched += node.Count;
+                node = node.next;
             }
-            while (currentNode != null && !found);
-            return (found) ? (index) : (-1);
+            return (found) ? (itemsSearched + nodeIndex) : (nodeIndex);
         }
 
         public void Insert(int index, T item)
         {
-            CheckIndex(index, _Count);
+            ValidateIndex(index, _Count);
             if (index == _Count)
             {
-                Add(item);
-                return;
-            }
-            if (index == 0)
-            {
-                _FirstNode.Insert(0, item);
+                if (_LastNode.IsNotFull())
+                {
+                    _LastNode.Add(item);
+                }
+                else
+                {
+                    var newNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
+                    newNode.Add(item);
+                    _LastNode.AppendNode(newNode);
+                    _LastNode = newNode;
+                }
                 _Count++;
                 return;
             }
-            var node = FindNodeAndIndex(ref index);
-            node.Insert(index, item);
+
+            var nodeandindex = FindNodeAndNodeIndex(index);
+            var node = nodeandindex.Node;
+            var nodeIndex = nodeandindex.Index;
+            if (node.IsNotFull())
+            {
+                node.Insert(nodeIndex, item);
+            }
+            else
+            {
+                var newNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
+                node.InsertNodeNext(newNode);
+                var targetNode = node;
+                int midIndex = _NodeCapacity / 2;
+
+                if (nodeIndex > midIndex)
+                {
+                    midIndex += 1;
+                    nodeIndex -= midIndex;
+                    targetNode = newNode;
+                }
+
+                node.PushItemsToNextNode(midIndex);
+
+                targetNode.Insert(nodeIndex, item);
+
+                if (node == _LastNode)
+                    _LastNode = newNode;
+            }
             _Count++;
-            FindNewLastNode();
         }
 
         public void RemoveAt(int index)
         {
-            CheckIndex(index, _Count - 1);
-            var node = FindNodeAndIndex(ref index);
-            node.RemoveAt(index);
+            ValidateIndex(index, _Count - 1);
+            var nodeandindex = FindNodeAndNodeIndex(index);
+            var node = nodeandindex.Node;
+            var nodeIndex = nodeandindex.Index;
+            node.RemoveAt(nodeIndex);
             _Count--;
-            FindNewLastNode();
+
+            UpdateLastNode(node);
         }
         #endregion IList<T> Methods
 
 
+        #region Public Non-Interface Methods
+        #region List-like methods
+        public void AddRange(IEnumerable<T> range)
+        {
+            InsertRange(_Count, range);
+        }
+
+        public void InsertRange(int index, IEnumerable<T> collection)
+        {
+            if (collection == null)
+            {
+                throw new ArgumentNullException("Collection cannot be null");
+            }
+
+            ValidateIndex(index, _Count);
+
+            int collectionLength = 0;
+
+            var nodeandindex = FindNodeAndNodeIndex(index);
+            var node = nodeandindex.Node;
+            var nodeIndex = nodeandindex.Index;
+
+            var initialNextNode = node.next;
+            int remainingNodeItemsCount = node.Count - nodeIndex;
+
+            ICollection<T> c = collection as ICollection<T>;
+            if (c != null)
+            {
+                collectionLength = c.Count;
+
+                T[] newData = new T[collectionLength + remainingNodeItemsCount];
+                c.CopyTo(newData, 0);
+
+                node.CopyTo(nodeIndex, newData, collectionLength, remainingNodeItemsCount);
+                node.RemoveRange(nodeIndex, remainingNodeItemsCount);
+
+                int copyStartIndex = 0;
+                int newDataLength = newData.Length;
+
+                while (copyStartIndex < newDataLength)
+                {
+                    int itemsToCopyCount = Math.Min(
+                        _NodeCapacity - node.Count,
+                        newDataLength - copyStartIndex);
+                    node.AddRange(newData, copyStartIndex, itemsToCopyCount);
+                    copyStartIndex += itemsToCopyCount;
+                    var newNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
+                    node.AppendNode(newNode);
+                    node = newNode;
+                }
+            }
+            else
+            {
+                T[] remainingNodeData = new T[remainingNodeItemsCount];
+                node.CopyTo(nodeIndex, remainingNodeData, 0, remainingNodeItemsCount);
+                node.RemoveRange(nodeIndex, remainingNodeItemsCount);
+
+                // Don't want to import System.Linq namespace, so no Concat methods
+                var enumerator = collection.GetEnumerator();
+                while (enumerator.MoveNext())
+                {
+                    node.Add(enumerator.Current);
+                    collectionLength++;
+                    if (node.Count == _NodeCapacity)
+                    {
+                        var newNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
+                        node.AppendNode(newNode);
+                        node = newNode;
+                    }
+                }
+
+                for (int i = 0; i < remainingNodeItemsCount; i++)
+                {
+                    node.Add(remainingNodeData[i]);
+                    if (node.Count == _NodeCapacity)
+                    {
+                        var newNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
+                        node.AppendNode(newNode);
+                        node = newNode;
+                    }
+                }
+            }
+
+            if (node.IsEmpty())
+            {
+                node = node.previous;
+            }
+
+            node.AppendNode(initialNextNode);
+            node.PullItemsFromNextNode();
+            UpdateLastNode(node);
+
+            _Count += collectionLength;
+        }
+
+        private void RemoveRange(int index, int count)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion List-like methods
+        #endregion Public Non-Interface Methods
+
+
         #region Private Methods
-        private UnrolledLinkedListNode<T> FindNodeAndIndex(ref int index)
+        private void ValidateIndex(int index, int maxValue)
+        {
+            if (index < 0 || index > maxValue)
+                throw new IndexOutOfRangeException(
+                      string.Format("Index cannot be less than 0, " +
+                                    "or greater than Count: {0}", maxValue));
+        }
+
+        private struct NodeAndNodeIndex
+        {
+            public UnrolledLinkedListNode<T> Node;
+            public int Index;
+
+            public NodeAndNodeIndex(UnrolledLinkedListNode<T> node, int index)
+            {
+                Node = node;
+                Index = index;
+            }
+        }
+
+        private NodeAndNodeIndex FindNodeAndNodeIndex(int index)
         {
             var currentNode = _FirstNode;
-            do
+            while (currentNode != null)
             {
-                if (index < currentNode.Count || index == 0)
+                if (index < currentNode.Count || currentNode.Count == 0)
                 {
                     break;
                 }
                 index -= currentNode.Count;
-                currentNode = currentNode.Next;
+                currentNode = currentNode.next;
             }
-            while (currentNode != null);
+
             if (currentNode == null)
             {
                 currentNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
-                _LastNode.Append(currentNode);
+                _LastNode.AppendNode(currentNode);
                 _LastNode = currentNode;
             }
-            return currentNode;
+            return new NodeAndNodeIndex(currentNode, index);
         }
 
-        private void FindNewLastNode()
+        private void UpdateLastNode(UnrolledLinkedListNode<T> node)
         {
-            while (_LastNode.IsEmpty() && _LastNode.Previous != null)
+            // prevNode, node, nextNode;
+            var nextNode = node.next;
+            var prevNode = node.previous;
+            if (nextNode == _LastNode && nextNode.IsEmpty())
             {
-                _LastNode = _LastNode.Previous;
+                node.ByPassNextNode();
+                _LastNode = node;
+                return;
             }
-            while (_LastNode.Next != null)
+            if (nextNode == null && !node.IsEmpty())
             {
-                _LastNode = _LastNode.Next;
+                _LastNode = node;
+                return;
+            }
+            if (node.IsEmpty() && prevNode != null)
+            {
+                prevNode.ByPassNextNode();
+                _LastNode = prevNode;
+                return;
             }
         }
         #endregion Private Methods

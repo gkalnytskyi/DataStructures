@@ -3,34 +3,45 @@ using System.Collections.Generic;
 
 namespace DataStructures
 {
-    class UnrolledLinkedListNode<T>
+    internal sealed class UnrolledLinkedListNode<T>
     {
-        internal UnrolledLinkedListNode<T> Previous { get; private set; }
-        internal UnrolledLinkedListNode<T> Next { get; private set; }
-        internal int Count { get; private set; }
-        internal readonly T[] Data;
+        internal UnrolledLinkedListNode<T> previous;
+        internal UnrolledLinkedListNode<T> next;
+        private int _size;
+        internal int Count { get { return _size; } }
 
-        private int HalfCapacity { get { return (Data.Length + 1) / 2; } }
+        internal readonly T[] data;
+        private readonly int _halfCapacity;
 
         #region Constructors
         internal UnrolledLinkedListNode(int capacity)
         {
-            Data = new T[capacity];
-            Count = 0;
+            data = new T[capacity];
+            _halfCapacity = (capacity + 1) / 2;
+            _size = 0;
         }
 
-        protected UnrolledLinkedListNode(UnrolledLinkedListNode<T> node)
+        /// <summary>
+        /// Performs a shallow copy of array elements
+        /// </summary>
+        /// <param name="node"></param>
+        internal UnrolledLinkedListNode(UnrolledLinkedListNode<T> node)
         {
-            Data = new T[node.Data.Length];
-            Array.Copy(node.Data, Data, node.Data.Length);
-            Count = node.Count;
+            data = new T[node.data.Length];
+            Array.Copy(node.data, data, node.data.Length);
+            _size = node._size;
         }
         #endregion Constructors
 
         #region Methods
         internal bool IsEmpty()
         {
-            return Count == 0;
+            return _size == 0;
+        }
+
+        internal bool IsNotFull()
+        {
+            return _size < data.Length;
         }
 
         internal UnrolledLinkedListNode<T> Clone()
@@ -40,38 +51,35 @@ namespace DataStructures
 
         internal void Add(T item)
         {
-            if (Count < Data.Length)
-            {
-                Data[Count] = item;
-                Count++;
-            }
-            else
-            {
-                CreateNext();
-                Next.Add(item);
-            }
+            data[_size] = item;
+            _size++;
+        }
+
+        internal void Insert(int index, T item)
+        {
+            ShiftItemsRight(index, index + 1);
+            data[index] = item;
         }
 
         internal void RemoveAt(int index)
         {
             ShiftItemsLeft(index + 1, index);
-            PullItemsFromNext();
+            PullItemsFromNextNode();
         }
 
-        internal int CopyTo(T[] array, int arrayIndex)
+        internal void CopyTo(T[] array, int arrayIndex)
         {
-            Array.Copy(Data, 0, array, arrayIndex, Count);
-            return Count;
+            Array.Copy(data, 0, array, arrayIndex, _size);
         }
 
         internal void CopyTo(int index, T[] array, int arrayIndex, int count)
         {
-            Array.Copy(Data, index, array, arrayIndex, count);
+            Array.Copy(data, index, array, arrayIndex, count);
         }
 
         internal int IndexOf(T item)
         {
-            return Array.IndexOf(Data, item, 0, Count);
+            return Array.IndexOf(data, item, 0, _size);
         }
 
         internal bool Contains(T item)
@@ -79,129 +87,65 @@ namespace DataStructures
             return (IndexOf(item) > -1);
         }
 
-        internal void Insert(int index, T item)
+        internal void AddRange(T[] array, int arrayIndex, int count)
         {
-            var targetNode = this;
-            if (Count == Data.Length)
-            {
-                int midIndex = Data.Length / 2;
-                var condition = index > midIndex;
-                if (condition)
-                {
-                    midIndex += 1;
-                    index -= midIndex;
-                }
-
-                SplitAt(midIndex);
-                if (condition) targetNode = Next;
-            }
-
-            targetNode.ShiftItemsRight(index, index + 1);
-            targetNode.Data[index] = item;
+            InserRange(_size, array, arrayIndex, count);
         }
 
-        internal int InsertRange(int index, IEnumerable<T> collection)
+        internal void InserRange(int index, T[] array, int arrayIndex, int count)
         {
-            int collectionLength = 0;
-            ICollection<T> c = collection as ICollection<T>;
-            var node = this;
-            if (c != null)
-            {
-                collectionLength = c.Count;
-                int remainingNodeItemsCount = node.Count - index;
-
-                T[] newData = new T[c.Count + remainingNodeItemsCount];
-                c.CopyTo(newData, 0);
-
-                if (remainingNodeItemsCount > 0)
-                {
-                    Array.Copy(node.Data, index, newData, c.Count, remainingNodeItemsCount);
-                    node.Count -= remainingNodeItemsCount;
-                }
-
-                int startNewDataCopyIndex = 0;
-
-                while (startNewDataCopyIndex < newData.Length)
-                {
-                    var copyLength = Math.Min(
-                        node.Data.Length - node.Count,
-                        newData.Length - startNewDataCopyIndex);
-                    Array.Copy(newData, startNewDataCopyIndex, node.Data, node.Count, copyLength);
-                    node.Count += copyLength;
-                    startNewDataCopyIndex += copyLength;
-                    node = node.CreateNext();
-                }                
-            }
-            else
-            {
-                var enumerator = collection.GetEnumerator();
-                while (enumerator.MoveNext())
-                {
-                    node.Insert(index, enumerator.Current);
-                    collectionLength++;
-                    index = ++index % Data.Length;
-                    if (index > node.Count)
-                    {
-                        index -= node.Count;
-                        node = node.Next;
-                        continue;
-                    }
-                    if (index == 0)
-                    {
-                        if (node.Next == null)
-                            node.CreateNext();
-                        node = node.Next;
-                    }
-                }
-            }
-            if (node.IsEmpty())
-            {
-                node = node.Previous;
-                node.ByPassNext();
-            }
-            node.PullItemsFromNext();
-            return collectionLength;
+            ShiftItemsRight(index, index + count);
+            Array.Copy(array, arrayIndex, data, index, count);
         }
 
-        internal void Append(UnrolledLinkedListNode<T> node)
+        internal void RemoveRange(int index, int count)
+        {
+            ShiftItemsLeft(index + count, index);
+        }
+
+        internal void AppendNode(UnrolledLinkedListNode<T> node)
         {
             if (node != null)
-                node.Previous = this;
-            Next = node;
+                node.previous = this;
+            next = node;
         }
 
-        internal void Prepend(UnrolledLinkedListNode<T> node)
+        internal void PrependNode(UnrolledLinkedListNode<T> node)
         {
             if (node != null)
-                node.Next = this;
-            Previous = node;
+                node.next = this;
+            previous = node;
         }
 
-        internal void ByPassNext()
+        internal void InsertNodeNext(UnrolledLinkedListNode<T> node)
         {
-            if (Next == null)
-                return;
-            var newNext = Next.Next;
+            node.AppendNode(next);
+            node.PrependNode(this);
+        }
+
+        internal void ByPassNextNode()
+        {
+            var newNext = next.next;
             if (newNext != null)
-                newNext.Previous = this;
-            Next = newNext;
+                newNext.previous = this;
+            next = newNext;
         }
         #endregion Public Methods
 
 
         #region Private Methods
-        private UnrolledLinkedListNode<T> CreateNext()
+        private UnrolledLinkedListNode<T> CreateNextNode()
         {
-            var newNode = new UnrolledLinkedListNode<T>(Data.Length);
-            newNode.Append(Next);
-            Append(newNode);
+            var newNode = new UnrolledLinkedListNode<T>(data.Length);
+            newNode.AppendNode(next);
+            AppendNode(newNode);
             return newNode;
         }
 
         private void SplitAt(int index)
         {
-            CreateNext();
-            PushItemsToNext(index);
+            CreateNextNode();
+            PushItemsToNextNode(index);
         }
 
         private void ShiftItemsRight(int sourceIndex, int destinationIndex)
@@ -209,9 +153,9 @@ namespace DataStructures
             if (destinationIndex < sourceIndex)
                 throw new InvalidOperationException("This shifts items right");
 
-            int length = Count - sourceIndex;
-            Array.Copy(Data, sourceIndex, Data, destinationIndex, length);
-            Count += destinationIndex - sourceIndex;
+            int length = _size - sourceIndex;
+            Array.Copy(data, sourceIndex, data, destinationIndex, length);
+            _size += destinationIndex - sourceIndex;
         }
 
         private void ShiftItemsLeft(int sourceIndex, int destinationIndex)
@@ -220,58 +164,57 @@ namespace DataStructures
                 throw new InvalidOperationException("This shifts items left");
 
             int idxDifference = sourceIndex - destinationIndex;
-            int length = Count - sourceIndex;
+            int length = _size - sourceIndex;
 
             // TODO: think about the special case of length == 0,
             // when the last element in the node is removed
 
-            Array.Copy(Data, sourceIndex, Data, destinationIndex, length);
-            Array.Clear(Data, destinationIndex + length, idxDifference);
-            Count -= idxDifference;
+            Array.Copy(data, sourceIndex, data, destinationIndex, length);
+            Array.Clear(data, destinationIndex + length, idxDifference);
+            _size -= idxDifference;
         }
 
-        private void PullItemsFromNext()
+        internal void PullItemsFromNextNode()
         {
-            if (Next == null)
+            if (next == null)
                 return;
 
-            if (Count > HalfCapacity)
+            if (_size > _halfCapacity)
                 return;
 
             PullItemsFromNextUntilHalfFull();
 
-            var nextCount = Next.Count;
-            int remainingCapacity = Data.Length - Count;
+            var next_size = next._size;
+            int remainingCapacity = data.Length - _size;
 
-            if (nextCount <= remainingCapacity)
+            if (next_size <= remainingCapacity)
             {
-                Array.Copy(Next.Data, 0, Data, Count, nextCount);
-                Count += nextCount;
-                Next.Count = 0;
-                ByPassNext();
+                Array.Copy(next.data, 0, data, _size, next_size);
+                _size += next_size;
+                next._size = 0;
             }
         }
 
         private void PullItemsFromNextUntilHalfFull()
         {
-            int itemsShortToHalfFull = HalfCapacity - Count;
-            int numberOfItemsToTransfer = Math.Min(itemsShortToHalfFull, Next.Count);
+            int itemsShortToHalfFull = _halfCapacity - _size;
+            int numberOfItemsToTransfer = Math.Min(itemsShortToHalfFull, next._size);
             if (numberOfItemsToTransfer == 0)
                 return;
-            Array.Copy(Next.Data, 0, Data, Count, numberOfItemsToTransfer);
-            Count += numberOfItemsToTransfer;
+            Array.Copy(next.data, 0, data, _size, numberOfItemsToTransfer);
+            _size += numberOfItemsToTransfer;
 
-            Next.ShiftItemsLeft(numberOfItemsToTransfer, 0);
+            next.ShiftItemsLeft(numberOfItemsToTransfer, 0);
         }
 
-        private void PushItemsToNext(int startIndex)
+        internal void PushItemsToNextNode(int startIndex)
         {
-            var length = Count - startIndex;
-            Array.Copy(Data, startIndex, Next.Data, 0, length);
-            Next.Count += length;
+            var length = _size - startIndex;
+            Array.Copy(data, startIndex, next.data, 0, length);
+            next._size += length;
 
-            Array.Clear(Data, startIndex, length);
-            Count -= length;
+            Array.Clear(data, startIndex, length);
+            _size -= length;
         }
         #endregion Private Methods
     }

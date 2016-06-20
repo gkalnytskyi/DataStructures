@@ -28,7 +28,7 @@ namespace DataStructures
                         throw new InvalidOperationException();
                     }
 
-                    return _CurrentNode.Data[_CurrentIndex];
+                    return _CurrentNode.data[_CurrentIndex];
                 }
             }
 
@@ -53,7 +53,7 @@ namespace DataStructures
                     return true;
                 }
 
-                _CurrentNode = _CurrentNode.Next;
+                _CurrentNode = _CurrentNode.next;
 
                 if (_CurrentNode == null)
                 {

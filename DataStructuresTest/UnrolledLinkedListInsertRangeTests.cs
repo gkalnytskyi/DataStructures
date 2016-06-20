@@ -59,7 +59,7 @@ namespace DataStructuresTest
         {
             // Arrange
             _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
-            var newCollection = Enumerable.Range(0, insertCollectionCount);
+            var newCollection = Enumerable.Range(0, insertCollectionCount).Select(x => x * 10);
 
             // Act
             _List.InsertRange(index, newCollection);
@@ -83,7 +83,7 @@ namespace DataStructuresTest
         {
             // Arrange
             _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
-            var newCollection = Enumerable.Range(0, insertCollectionCount).ToList();
+            var newCollection = Enumerable.Range(0, insertCollectionCount).Select(x => x * 10).ToList();
 
             // Act
             _List.InsertRange(index, newCollection);
@@ -104,7 +104,7 @@ namespace DataStructuresTest
         {
             // Arrange
             _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
-            var newCollection = Enumerable.Range(0, insertCollectionCount).ToList();
+            var newCollection = Enumerable.Range(0, insertCollectionCount).Select(x => x * 10).ToList();
 
             // Act
             _List.InsertRange(index, newCollection);
@@ -112,7 +112,7 @@ namespace DataStructuresTest
 
             // Assert
             var expectedCollection = Enumerable.Range(1, index).
-                Concat(Enumerable.Range(0, insertCollectionCount)).
+                Concat(newCollection).
                 Concat(Enumerable.Range(index + 1, count - index)).
                 Concat(new[] { 42 }).ToArray();
             Assert.That(_List.Count, Is.EqualTo(count + insertCollectionCount + 1));
