@@ -8,85 +8,135 @@ namespace DataStructuresTest
     [TestFixture]
     class UnrolledLinkedListAddRemoveTests
     {
-        UnrolledLinkedList<int> _List;
+        UnrolledLinkedList<int> _list;
 
         [Test]
-        public void Adding_and_Reading_one_item()
+        public void Creating_an_empty_list_with_specified_node_capacity(
+            [Values(2,3,5,8,9,16)] int capacity
+            )
         {
-            // Arrange
-            _List = new UnrolledLinkedList<int>(8);
-
             // Act
-            _List.Add(1);
-            var enumerator = _List.GetEnumerator();
-            enumerator.MoveNext();
-            var result = enumerator.Current;
+            _list = new UnrolledLinkedList<int>(capacity);
 
             // Assert
-            Assert.That(result, Is.EqualTo(1));
+            Assert.That(_list.Count, Is.EqualTo(0));
+            Assert.That(_list._FirstNode, Is.EqualTo(_list._LastNode));
+            Assert.That(_list._FirstNode.Count, Is.EqualTo(0));
+            Assert.That(_list._FirstNode.data, Is.EquivalentTo(new int[capacity]));
+            Assert.That(_list._FirstNode.data.Length, Is.EqualTo(capacity));
+            Assert.That(_list._FirstNode.next, Is.Null);
+            Assert.That(_list._FirstNode.previous, Is.Null);
+        }
+
+        public void Creating_list_with_invalid_capacity_throws_exception(
+            [Values(0,-1,-100)] int capacity)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new UnrolledLinkedList<int>(capacity));
         }
 
         [Test]
-        public void Adding_and_Reading_Multiple_items_to_List_Sequentially()
+        public void Adding_an_item_to_an_empty_list()
         {
-            // Arrange
-            _List = new UnrolledLinkedList<int>(8);
+            _list = new UnrolledLinkedList<int>(8);
 
-            // Act
-            _List.Add(1);
-            _List.Add(2);
-            _List.Add(3);
-            _List.Add(4);
-            _List.Add(5);
+            _list.Add(42);
 
-            var result = new int[5];
-            var i = 0;
-            foreach (var item in _List)
-            {
-                result[i] = item;
-                i++;
-            }
-
-            // Assert
-            Assert.That(result, Is.EquivalentTo(new int[] { 1, 2, 3, 4, 5 }));
+            Assert.That(_list.Count, Is.EqualTo(1));
+            Assert.That(_list, Is.EquivalentTo(new int[] { 42 }));
+            Assert.That(_list._FirstNode, Is.EqualTo(_list._LastNode));
+            Assert.That(_list._FirstNode.Count, Is.EqualTo(1));
+            Assert.That(_list._FirstNode.data, Is.EqualTo(new int[8] { 42, 0, 0, 0, 0, 0, 0, 0 }));
+            Assert.That(_list._FirstNode.next, Is.Null);
+            Assert.That(_list._FirstNode.previous, Is.Null);
         }
 
         [Test]
-        public void Clearing_Unrolled_Linked_List()
+        public void Adding_Multiple_Items_into_the_list_Sequentially()
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, 10);
+            _list = new UnrolledLinkedList<int>(4);
 
             // Act
-            _List.Clear();
+            _list.Add(1);
+            _list.Add(2);
+            _list.Add(3);
+            _list.Add(4);
 
             // Assert
-            Assert.That(_List.Count, Is.EqualTo(0));
-            Assert.That(_List.GetEnumerator().MoveNext(), Is.False);
+            Assert.That(_list.Count, Is.EqualTo(4));
+            Assert.That(_list, Is.EquivalentTo(new int[] { 1, 2, 3, 4 }));
+            Assert.That(_list._FirstNode, Is.EqualTo(_list._LastNode));
+            Assert.That(_list._FirstNode.Count, Is.EqualTo(4));
+            Assert.That(_list._FirstNode.data, Is.EqualTo(new int[4] { 1, 2, 3, 4 }));
+            Assert.That(_list._FirstNode.next, Is.Null);
+            Assert.That(_list._FirstNode.previous, Is.Null);
+        }
+
+        [Test]
+        public void Added_items_overflow_to_the_next_created_node()
+        {
+            // Arrange
+            _list = new UnrolledLinkedList<int>(4);
+            _list.Add(1);
+            _list.Add(2);
+            _list.Add(3);
+            _list.Add(4);
+            // Act
+            _list.Add(5);
+            _list.Add(6);
+            // Assert
+            Assert.That(_list.Count, Is.EqualTo(6));
+            Assert.That(_list, Is.EquivalentTo(new int[] { 1, 2, 3, 4, 5, 6 }));
+            Assert.That(_list._FirstNode, Is.Not.EqualTo(_list._LastNode));
+            Assert.That(_list._LastNode, Is.EqualTo(_list._FirstNode.next));
+            Assert.That(_list._FirstNode.previous, Is.Null);
+            Assert.That(_list._LastNode.Count, Is.EqualTo(2));
+            Assert.That(_list._LastNode.data, Is.EquivalentTo(new int[] { 5, 6, 0, 0 }));
+            Assert.That(_list._LastNode.next, Is.Null);
+        }
+
+        [Test]
+        public void Clearing_list_removes_all_items()
+        {
+            // Arrange
+            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 10);
+
+            // Act
+            _list.Clear();
+
+            // Assert
+            Assert.That(_list.Count, Is.EqualTo(0));
+            Assert.That(_list.GetEnumerator().MoveNext(), Is.False);
+            Assert.That(_list, Is.Empty);
+            Assert.That(_list._FirstNode, Is.EqualTo(_list._LastNode));
+            Assert.That(_list._FirstNode.previous, Is.Null);
+            Assert.That(_list._FirstNode.next, Is.Null);
+            Assert.That(_list._FirstNode.data, Is.EquivalentTo(new int[4]));
+            Assert.That(_list._FirstNode.Count, Is.EqualTo(0));
         }
 
 
         [Test]
-        public void Contains_does_not_find_element_when_it_is_not_in_the_collection()
+        public void Contains_returns_false_when_element_is_not_found()
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 9);
+            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 9);
 
             // Act
-            bool result = _List.Contains(51);
+            bool result = _list.Contains(51);
 
             // Assert
             Assert.That(result, Is.False);
         }
 
         [Test]
-        public void Contains_finds_element_when_it_is_in_the_collection()
+        public void Contains_returns_true_if_element_is_found()
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 9);
+            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 9);
 
             // Act
-            bool result = _List.Contains(7);
+            bool result = _list.Contains(7);
 
             // Assert
             Assert.That(result, Is.True);
@@ -98,10 +148,47 @@ namespace DataStructuresTest
             [Values(7, 15, 6, 11, 15, 0)] int count)
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
+            _list = TestUtils.GetUnrolledLinkedListWithItems(8, count);
 
             // Act, Assert
-            Assert.Throws<IndexOutOfRangeException>(() => _List.RemoveAt(index));
+            Assert.Throws<IndexOutOfRangeException>(() => _list.RemoveAt(index));
+        }
+
+        [Test]
+        public void RemoveAt_item_from_the_begining_of_the_list()
+        {
+            // Arrange
+            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 4);
+
+            // Act
+            _list.RemoveAt(0);
+
+            // Assert
+            Assert.That(_list.Count, Is.EqualTo(3));
+            Assert.That(_list._FirstNode, Is.EqualTo(_list._LastNode));
+            Assert.That(_list._FirstNode.Count, Is.EqualTo(3));
+            Assert.That(_list._FirstNode.data, Is.EquivalentTo(new[] { 2, 3, 4, 0 }));
+        }
+
+        [Test]
+        public void RemoveAt_item_from_the_begining_of_the_node()
+        {
+            // Arrange
+            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 10);
+
+            // Act
+            _list.RemoveAt(4);
+            var second_node = _list._FirstNode.next;
+
+            // Assert
+            var expected_list = Enumerable.Range(1, 4).
+                Concat(Enumerable.Range(6, 3)).
+                Concat(Enumerable.Range(9, 2));
+            Assert.That(_list.Count, Is.EqualTo(9));
+            Assert.That(second_node.Count, Is.EqualTo(3));
+            Assert.That(second_node.data, Is.EquivalentTo(new[] { 6, 7, 8, 0 }));
+            Assert.That(second_node.Count, Is.EqualTo(3));
+            Assert.That(_list, Is.EquivalentTo(expected_list));
         }
 
         [Test]
@@ -110,57 +197,78 @@ namespace DataStructuresTest
         {
             // Arrange
             const int count = 15;
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
+            _list = TestUtils.GetUnrolledLinkedListWithItems(4, count);
 
             // Act
-            _List.RemoveAt(index);
+            _list.RemoveAt(index);
 
             // Assert
             var expectedResult = Enumerable.Range(1, count).
                                     Except(Enumerable.Range(index + 1, 1));
-            Assert.That(_List.Count, Is.EqualTo(count - 1));
-            Assert.That(_List, Is.EquivalentTo(expectedResult));
+            Assert.That(_list.Count, Is.EqualTo(count - 1));
+            Assert.That(_list, Is.EquivalentTo(expectedResult));
         }
 
         [Test]
-        public void Remove_item_from_list_by_index_from_not_full_node(
-            [Values(8, 9)] int nodeCapacity)
+        public void RemoveAt_element_from_the_last_node_with_one_item()
         {
             // Arrange
-            const int count = 15;
-            _List = TestUtils.GetUnrolledLinkedListWithItems(nodeCapacity, count);
-            int initiallyRemoved = nodeCapacity / 2;
-            for (int i = 1; i < initiallyRemoved + 1; ++i)
-            {
-                _List.Remove(i);
-            }
+            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 9);
 
             // Act
-            _List.RemoveAt(2);
+            var second_node = _list._FirstNode.next;
+            _list.RemoveAt(8);
 
             // Assert
-            var expectedResult = Enumerable.Range(5, 2).Concat(Enumerable.Range(8, count - 7));
-            Assert.That(_List.Count, Is.EqualTo(count - initiallyRemoved - 1));
-            Assert.That(_List, Is.EquivalentTo(expectedResult));
+            var expectedCollection = Enumerable.Range(1, 8);
+            Assert.That(second_node.next, Is.Null);
+            Assert.That(_list._LastNode, Is.EqualTo(second_node));
+            Assert.That(_list, Is.EquivalentTo(expectedCollection));
         }
 
         [Test]
-        public void RemoveAt_and_add_element_at_the_end_of_the_list()
+        public void RemoveAt_on_half_full_node_causes_item_transfer()
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, 9);
+            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 12);
+            for (var i = 0; i < 2; i++)
+            {
+                _list.RemoveAt(4);
+            }
 
             // Act
-            for (int i = 0; i < 5; i++)
-            {
-                _List.RemoveAt(3);
-            }
-            _List.Add(10);
+            _list.RemoveAt(4);
+            var second_node = _list._FirstNode.next;
 
             // Assert
-            var expectedCollection = Enumerable.Range(1, 3).
-                Concat(Enumerable.Range(9, 2));
-            Assert.That(_List, Is.EquivalentTo(expectedCollection));
+            Assert.That(_list.Count, Is.EqualTo(9));
+            Assert.That(second_node.Count, Is.EqualTo(2));
+            Assert.That(second_node.data, Is.EquivalentTo(new[] { 8, 9, 0, 0 }));
+            Assert.That(second_node.next, Is.Not.Null);
+            Assert.That(second_node.next.Count, Is.EqualTo(3));
+            Assert.That(second_node.next.data, Is.EquivalentTo(new[] { 10, 11, 12, 0 }));
+        }
+
+        [Test]
+        public void RemoveAt_on_half_full_node_with_enough_capacity_cuts_away_last_node()
+        {
+            // Arrange
+            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 11);
+            for (var i = 0; i < 2; i++)
+            {
+                _list.RemoveAt(4);
+            }
+
+            // Act
+            _list.RemoveAt(4);
+            var second_node = _list._FirstNode.next;
+
+            // Assert
+            Assert.That(_list.Count, Is.EqualTo(8));
+            Assert.That(second_node.Count, Is.EqualTo(4));
+            Assert.That(second_node.data, Is.EquivalentTo(new[] { 8, 9, 10, 11 }));
+            Assert.That(second_node.next, Is.Null);
+            Assert.That(_list._LastNode, Is.EqualTo(second_node));
         }
     }
 }

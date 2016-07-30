@@ -37,6 +37,22 @@ namespace DataStructuresTest
         }
 
         [Test]
+        public void Getting_element_from_list_using_enumerator()
+        {
+            // Arrange
+            var _list = new UnrolledLinkedList<int>(8);
+            _list.Add(1);
+
+            // Act
+            var enumerator = _list.GetEnumerator();
+            enumerator.MoveNext();
+            var result = enumerator.Current;
+
+            // Assert
+            Assert.That(result, Is.EqualTo(1));
+        }
+
+        [Test]
         public void Enumerator_MoveNext_Returns_False_After_At_The_End_Of_Iteration()
         {
             // Arrange

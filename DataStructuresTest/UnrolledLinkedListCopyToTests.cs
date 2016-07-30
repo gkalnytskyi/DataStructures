@@ -55,7 +55,8 @@ namespace DataStructuresTest
             _List.CopyTo(array, 0);
 
             // Assert
-            var expectedCollection = Enumerable.Range(1, 6).Concat(Enumerable.Repeat(0, 4));
+            var expectedCollection = Enumerable.Range(1, 6).
+                Concat(Enumerable.Repeat(0, 4));
             Assert.That(array, Is.EquivalentTo(expectedCollection));
         }
 
@@ -70,7 +71,9 @@ namespace DataStructuresTest
             _List.CopyTo(array, 2);
 
             // Assert
-            var expectedCollection = Enumerable.Repeat(0, 2).Concat(Enumerable.Range(1, 6)).Concat(Enumerable.Repeat(0, 2));
+            var expectedCollection = Enumerable.Repeat(0, 2).
+                Concat(Enumerable.Range(1, 6)).
+                Concat(Enumerable.Repeat(0, 2));
             Assert.That(array, Is.EquivalentTo(expectedCollection));
         }
     }
