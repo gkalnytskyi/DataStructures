@@ -147,71 +147,18 @@ namespace DataStructuresTest
         }
 
         [Test]
-        public void Remove_very_last_item_from_the_node([Values(1, 9)] int count)
-        {
-            // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, count);
-
-            // Act
-            bool result = _List.Remove(count);
-
-            // Assert
-            Assert.That(result, Is.True);
-            Assert.That(_List.Count, Is.EqualTo(count - 1));
-            var expectedResult = Enumerable.Range(1, count - 1);
-            Assert.That(_List, Is.EquivalentTo(expectedResult));
-        }
-
-        [Test]
-        public void Remove_Several_Consequent_Items_from_UnrolledLinkedList()
-        {
-            // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 8);
-
-            // Act
-            _List.Remove(2);
-            _List.Remove(3);
-            _List.Remove(4);
-
-            // Assert
-            Assert.That(_List.Count, Is.EqualTo(5));
-            var template = Enumerable.Range(1, 1).Concat(Enumerable.Range(5, 4));
-            Assert.That(_List, Is.EquivalentTo(template));
-        }
-
-        [Test]
-        public void Remove_all_items_of_the_node_deletes_it()
+        public void Remove_all_items_from_the_last_node_deletes_it()
         {
             // Arrange
             _List = TestUtils.GetUnrolledLinkedListWithItems(4, 5);
 
             // Act
             _List.Remove(5);
-            var enumerator = _List.GetEnumerator();
-            for (var i = 0; i < 4; ++i)
-            {
-                enumerator.MoveNext();
-            }
-
-            var result = enumerator.MoveNext();
-
+            
             // Assert
-            Assert.That(result, Is.False);
-        }
-
-        [Test]
-        public void Remove_and_add_element_at_the_end_of_the_list()
-        {
-            // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, 9);
-
-            // Act
-            _List.Remove(9);
-            _List.Add(10);
-
-            // Assert
-            var expectedCollection = Enumerable.Range(1, 8).Concat(Enumerable.Range(10, 1));
-            Assert.That(_List, Is.EquivalentTo(expectedCollection));
+            Assert.That(_List.Count, Is.EqualTo(4));
+            Assert.That(_List._FirstNode, Is.EqualTo(_List._LastNode));
+            Assert.That(_List._FirstNode.next, Is.Null);
         }
     }
 }
