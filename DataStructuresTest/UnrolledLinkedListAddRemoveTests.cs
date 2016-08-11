@@ -253,7 +253,7 @@ namespace DataStructuresTest
         public void RemoveAt_on_half_full_node_with_enough_capacity_cuts_away_last_node()
         {
             // Arrange
-            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 11);
+            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 10);
             for (var i = 0; i < 2; i++)
             {
                 _list.RemoveAt(4);
@@ -264,9 +264,9 @@ namespace DataStructuresTest
             var second_node = _list._FirstNode.next;
 
             // Assert
-            Assert.That(_list.Count, Is.EqualTo(8));
-            Assert.That(second_node.Count, Is.EqualTo(4));
-            Assert.That(second_node.data, Is.EquivalentTo(new[] { 8, 9, 10, 11 }));
+            Assert.That(_list.Count, Is.EqualTo(7));
+            Assert.That(second_node.Count, Is.EqualTo(3));
+            Assert.That(second_node.data, Is.EquivalentTo(new[] { 8, 9, 10, 0 }));
             Assert.That(second_node.next, Is.Null);
             Assert.That(_list._LastNode, Is.EqualTo(second_node));
         }

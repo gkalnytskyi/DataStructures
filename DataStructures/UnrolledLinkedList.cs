@@ -366,17 +366,103 @@ namespace DataStructures
             }
 
             node.AppendNode(initialNextNode);
-            node.PullItemsFromNextNode();
+            node.PullItemsFromTail();
             UpdateLastNode(node);
 
             _Count += collectionLength;
         }
 
-        private void RemoveRange(int index, int count)
+        public void RemoveRange(int index, int count)
+        {
+            if (index < 0)
+            {
+                throw new ArgumentOutOfRangeException("Index cannot be less than 0");
+            }
+
+            if (count < 0)
+            {
+                throw new ArgumentOutOfRangeException("Count cannot be less than 0");
+            }
+
+            if (_Count - index < count)
+            {
+                throw new ArgumentException("index + count is greater than number of elements");
+            }
+
+            if (index == 0 && count == _Count)
+            {
+                Clear();
+                return;
+            }
+
+            var nodeAndIndex = FindNodeAndNodeIndex(index);
+            var node = nodeAndIndex.Node;
+            int nodeIndex = nodeAndIndex.Index;
+
+            var startNode = node;
+            int startNodeStartDeleteIndex = nodeIndex;
+            var endNode = node;
+            int endNodeLastExistingIndex = -1;
+
+            int itemsToRemoveCount = count;
+            
+            while (itemsToRemoveCount > 0)
+            {
+                int removeFromNodeCount = Math.Min(itemsToRemoveCount, node.Count - nodeIndex);
+                if (removeFromNodeCount < node.Count)
+                {
+                    node.RemoveRange(nodeIndex, removeFromNodeCount);
+                    nodeIndex = 0;
+                    endNodeLastExistingIndex = node.Count - 1;
+                }
+                else
+                {
+                    endNodeLastExistingIndex = - 1;
+                }
+                endNode = node;
+
+                itemsToRemoveCount -= removeFromNodeCount;
+                nodeIndex = 0;
+                node = node.next;
+            }
+
+            if (endNodeLastExistingIndex < 0)
+                endNode = endNode.next;
+
+            if (startNode != endNode)
+                if (startNodeStartDeleteIndex > 0)
+                    startNode.AppendNode(endNode);
+                else
+                {
+                    startNode = startNode.previous;
+                    endNode.PrependNode(startNode);
+                }
+
+            if (startNode != null)
+                startNode.PullItemsFromTail();
+            else
+                _FirstNode = endNode;
+
+            if (endNode != null && (startNode == null || startNode.next == endNode))
+            {
+                endNode.PullItemsFromTail();
+                UpdateLastNode(endNode);
+            }
+            else
+                UpdateLastNode(startNode);
+
+            _Count -= count;
+        }
+        #endregion List-like methods
+
+        /// <summary>
+        /// Minimizes the memory footprint of the list by compacting the items,
+        /// as if they were added continuously to the end of the list.
+        /// </summary>
+        public void Compact()
         {
             throw new NotImplementedException();
         }
-        #endregion List-like methods
         #endregion Public Non-Interface Methods
 
 

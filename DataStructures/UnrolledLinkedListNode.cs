@@ -64,7 +64,7 @@ namespace DataStructures
         internal void RemoveAt(int index)
         {
             ShiftItemsLeft(index + 1, index);
-            PullItemsFromNextNode();
+            PullItemsFromTail();
         }
 
         internal void CopyTo(T[] array, int arrayIndex)
@@ -174,37 +174,50 @@ namespace DataStructures
             _size -= idxDifference;
         }
 
-        internal void PullItemsFromNextNode()
+        internal void PullItemsFromTail()
         {
             if (next == null)
                 return;
 
-            if (_size > _halfCapacity)
+            if (_size >= _halfCapacity)
                 return;
 
             PullItemsFromNextUntilHalfFull();
 
+            if (next == null)
+                return;
+
             var next_size = next._size;
             int remainingCapacity = data.Length - _size;
 
-            if (next_size <= remainingCapacity)
+            if (next_size < next._halfCapacity && remainingCapacity >= next_size)
             {
                 Array.Copy(next.data, 0, data, _size, next_size);
                 _size += next_size;
-                next._size = 0;
+                ByPassNextNode();
             }
         }
 
         private void PullItemsFromNextUntilHalfFull()
         {
             int itemsShortToHalfFull = _halfCapacity - _size;
-            int numberOfItemsToTransfer = Math.Min(itemsShortToHalfFull, next._size);
-            if (numberOfItemsToTransfer == 0)
+            if (itemsShortToHalfFull == 0)
                 return;
-            Array.Copy(next.data, 0, data, _size, numberOfItemsToTransfer);
-            _size += numberOfItemsToTransfer;
-
-            next.ShiftItemsLeft(numberOfItemsToTransfer, 0);
+            int numberOfItemsToTransfer = 0;
+            var node = next;
+            while (itemsShortToHalfFull > 0 && next != null)
+            {
+                numberOfItemsToTransfer = Math.Min(itemsShortToHalfFull, next._size);
+                if (numberOfItemsToTransfer == 0)
+                    return;
+                Array.Copy(next.data, 0, data, _size, numberOfItemsToTransfer);
+                _size += numberOfItemsToTransfer;
+                itemsShortToHalfFull -= numberOfItemsToTransfer;
+                if (next._size == numberOfItemsToTransfer)
+                    ByPassNextNode();
+            }
+            if (next != null)
+                next.ShiftItemsLeft(numberOfItemsToTransfer, 0);
         }
 
         internal void PushItemsToNextNode(int startIndex)
