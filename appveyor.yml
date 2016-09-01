@@ -1,0 +1,13 @@
+version: '1.0.{build}'
+
+matrix:
+  fast_finish: true
+
+platform: Any CPU
+
+configuration:
+  - Debug
+  - Release
+
+test:
+  assemblies: DataStructuresTest.dll
