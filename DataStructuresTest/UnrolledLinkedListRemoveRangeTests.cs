@@ -55,6 +55,21 @@ namespace DataStructuresTest
         }
 
         [Test]
+        public void RemoveRange_applied_to_the_start_of_the_list_removes_first_node()
+        {
+            // Arrange
+            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 6);
+
+            // Act
+            _list.RemoveRange(0, 4);
+
+            // Assert
+            Assert.That(_list.Count, Is.EqualTo(2));
+            Assert.That(_list._FirstNode.Count, Is.EqualTo(2));
+            Assert.That(_list._FirstNode.data, Is.EquivalentTo(new int[] { 5, 6, 0, 0 }));
+        }
+
+        [Test]
         public void RemoveRange_applied_to_the_start_of_the_list_spanning_multiple_nodes()
         {
             // Arrange

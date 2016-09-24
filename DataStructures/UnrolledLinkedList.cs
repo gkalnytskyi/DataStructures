@@ -55,14 +55,14 @@ namespace DataStructures
             get
             {
                 ValidateIndex(index, _Count - 1);
-                var nodeandindex = FindNodeAndNodeIndex(index);
+                var nodeandindex = FindRelativeNodeAndNodeIndex(_FirstNode, 0, index);
                 return nodeandindex.Node.data[nodeandindex.Index];
             }
 
             set
             {
                 ValidateIndex(index, _Count - 1);
-                var nodeandindex = FindNodeAndNodeIndex(index);
+                var nodeandindex = FindRelativeNodeAndNodeIndex(_FirstNode, 0, index);
                 nodeandindex.Node.data[nodeandindex.Index] = value;
             }
         }
@@ -133,7 +133,10 @@ namespace DataStructures
         /// </summary>
         public void Clear()
         {
-            _LastNode = _FirstNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
+            _LastNode = _FirstNode;
+            _FirstNode.Clear();
+            _FirstNode.next = null;
+            _FirstNode.previous = null;
             _Count = 0;
         }
 
@@ -232,7 +235,7 @@ namespace DataStructures
                 return;
             }
 
-            var nodeandindex = FindNodeAndNodeIndex(index);
+            var nodeandindex = FindRelativeNodeAndNodeIndex(_FirstNode, 0, index);
             var node = nodeandindex.Node;
             var nodeIndex = nodeandindex.Index;
             if (node.IsNotFull())
@@ -266,7 +269,7 @@ namespace DataStructures
         public void RemoveAt(int index)
         {
             ValidateIndex(index, _Count - 1);
-            var nodeandindex = FindNodeAndNodeIndex(index);
+            var nodeandindex = FindRelativeNodeAndNodeIndex(_FirstNode, 0, index);
             var node = nodeandindex.Node;
             var nodeIndex = nodeandindex.Index;
             node.RemoveAt(nodeIndex);
@@ -295,7 +298,7 @@ namespace DataStructures
 
             int collectionLength = 0;
 
-            var nodeandindex = FindNodeAndNodeIndex(index);
+            var nodeandindex = FindRelativeNodeAndNodeIndex(_FirstNode, 0, index);
             var node = nodeandindex.Node;
             var nodeIndex = nodeandindex.Index;
 
@@ -395,62 +398,73 @@ namespace DataStructures
                 return;
             }
 
-            var nodeAndIndex = FindNodeAndNodeIndex(index);
-            var node = nodeAndIndex.Node;
-            int nodeIndex = nodeAndIndex.Index;
+            var startnodeandindex = FindRelativeNodeAndNodeIndex(_FirstNode, 0, index);
+            var startnode = startnodeandindex.Node;
+            int startnodeIndex = startnodeandindex.Index;
 
-            var startNode = node;
-            int startNodeStartDeleteIndex = nodeIndex;
-            var endNode = node;
-            int endNodeLastExistingIndex = -1;
+            var endnodeandindex = FindRelativeNodeAndNodeIndex(startnode, startnodeIndex, count - 1);
+            var endnode = endnodeandindex.Node;
+            int endnodeIndex = endnodeandindex.Index;
 
-            int itemsToRemoveCount = count;
-            
-            while (itemsToRemoveCount > 0)
+            if (endnode != startnode)
             {
-                int removeFromNodeCount = Math.Min(itemsToRemoveCount, node.Count - nodeIndex);
-                if (removeFromNodeCount < node.Count)
+                if (endnodeIndex < endnode.Count - 1)
+                    endnode.RemoveRange(0, endnodeIndex + 1);
+                else
+                    endnode = endnode.next;
+
+                if (startnodeIndex > 0)
+                    startnode.RemoveRange(startnodeIndex, startnode.Count - startnodeIndex);
+                else
+                    startnode = startnode.previous;
+
+                if (startnode != null)
                 {
-                    node.RemoveRange(nodeIndex, removeFromNodeCount);
-                    nodeIndex = 0;
-                    endNodeLastExistingIndex = node.Count - 1;
+                    startnode.AppendNode(endnode);
+                    startnode.PullItemsFromTail();
+                    if (endnode == startnode.next && endnode != null)
+                    {
+                        endnode.PullItemsFromTail();
+                        UpdateLastNode(endnode);
+                    }
+                    else
+                        UpdateLastNode(startnode);
                 }
                 else
                 {
-                    endNodeLastExistingIndex = - 1;
+                    endnode.PrependNode(startnode);
+                    endnode.PullItemsFromTail();
+                    _FirstNode = endnode;
+                    UpdateLastNode(endnode);
                 }
-                endNode = node;
-
-                itemsToRemoveCount -= removeFromNodeCount;
-                nodeIndex = 0;
-                node = node.next;
             }
-
-            if (endNodeLastExistingIndex < 0)
-                endNode = endNode.next;
-
-            if (startNode != endNode)
-                if (startNodeStartDeleteIndex > 0)
-                    startNode.AppendNode(endNode);
+            else
+            {
+                if (endnodeIndex - startnodeIndex + 1 < startnode.Count)
+                {
+                    startnode.RemoveRange(startnodeIndex, endnodeIndex - startnodeIndex + 1);
+                    startnode.PullItemsFromTail();
+                    UpdateLastNode(startnode);
+                }
                 else
                 {
-                    startNode = startNode.previous;
-                    endNode.PrependNode(startNode);
+                    var node = startnode;
+                    if (node == _LastNode)
+                    {
+                        _LastNode = _LastNode.previous;
+                        _LastNode.next = null;
+                    }
+                    else if (node == _FirstNode)
+                    {
+                        _FirstNode = _FirstNode.next;
+                        _FirstNode.previous = null;
+                    }
+                    else
+                    {
+                        node.previous.ByPassNextNode();
+                    }
                 }
-
-            if (startNode != null)
-                startNode.PullItemsFromTail();
-            else
-                _FirstNode = endNode;
-
-            if (endNode != null && (startNode == null || startNode.next == endNode))
-            {
-                endNode.PullItemsFromTail();
-                UpdateLastNode(endNode);
             }
-            else
-                UpdateLastNode(startNode);
-
             _Count -= count;
         }
         #endregion List-like methods
@@ -487,16 +501,30 @@ namespace DataStructures
             }
         }
 
-        private NodeAndNodeIndex FindNodeAndNodeIndex(int index)
+        private NodeAndNodeIndex FindRelativeNodeAndNodeIndex(
+            UnrolledLinkedListNode<T> startNode,
+            int node_start_index,
+            int rel_index)
         {
-            var currentNode = _FirstNode;
+            if (startNode == null)
+                throw new ArgumentNullException("starNode", "Start node cannot be null");
+
+            var currentNode = startNode;
+
+            if (node_start_index > currentNode.Count &&
+                node_start_index >= currentNode.data.Length)
+                throw new ArgumentOutOfRangeException("node_start_index", "Outside of specified node bounds");
+
+            int nodeIndex = node_start_index;
+            rel_index += node_start_index;
+
             while (currentNode != null)
             {
-                if (index < currentNode.Count || currentNode.Count == 0)
+                if (rel_index < currentNode.Count || currentNode.Count == 0)
                 {
                     break;
                 }
-                index -= currentNode.Count;
+                rel_index -= currentNode.Count;
                 currentNode = currentNode.next;
             }
 
@@ -506,7 +534,7 @@ namespace DataStructures
                 _LastNode.AppendNode(currentNode);
                 _LastNode = currentNode;
             }
-            return new NodeAndNodeIndex(currentNode, index);
+            return new NodeAndNodeIndex(currentNode, rel_index);
         }
 
         private void UpdateLastNode(UnrolledLinkedListNode<T> node)

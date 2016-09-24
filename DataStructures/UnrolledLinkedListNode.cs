@@ -20,17 +20,6 @@ namespace DataStructures
             _halfCapacity = (capacity + 1) / 2;
             _size = 0;
         }
-
-        /// <summary>
-        /// Performs a shallow copy of array elements
-        /// </summary>
-        /// <param name="node"></param>
-        internal UnrolledLinkedListNode(UnrolledLinkedListNode<T> node)
-        {
-            data = new T[node.data.Length];
-            Array.Copy(node.data, data, node.data.Length);
-            _size = node._size;
-        }
         #endregion Constructors
 
         #region Methods
@@ -44,9 +33,10 @@ namespace DataStructures
             return _size < data.Length;
         }
 
-        internal UnrolledLinkedListNode<T> Clone()
+        internal void Clear()
         {
-            return new UnrolledLinkedListNode<T>(this);
+            Array.Clear(data, 0, data.Length);
+            _size = 0;
         }
 
         internal void Add(T item)
@@ -134,17 +124,11 @@ namespace DataStructures
 
 
         #region Private Methods
-        private UnrolledLinkedListNode<T> CreateNextNode()
-        {
-            var newNode = new UnrolledLinkedListNode<T>(data.Length);
-            newNode.AppendNode(next);
-            AppendNode(newNode);
-            return newNode;
-        }
-
         private void SplitAt(int index)
         {
-            CreateNextNode();
+            var newNode = new UnrolledLinkedListNode<T>(data.Length);
+            InsertNodeNext(newNode);
+
             PushItemsToNextNode(index);
         }
 
