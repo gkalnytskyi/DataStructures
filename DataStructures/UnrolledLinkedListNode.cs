@@ -72,6 +72,11 @@ namespace DataStructures
             return Array.IndexOf(data, item, 0, _size);
         }
 
+        internal int LastIndexOf(T item)
+        {
+            return Array.LastIndexOf(data, item, _size - 1, _size);
+        }
+
         internal bool Contains(T item)
         {
             return (IndexOf(item) > -1);

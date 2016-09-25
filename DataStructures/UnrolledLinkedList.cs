@@ -7,6 +7,7 @@ namespace DataStructures
     public sealed partial class UnrolledLinkedList<T> : IList<T>, ICollection<T>, IEnumerable<T>
     {
         public const int NODE_CAPACITY = 16;
+        private const int ITEM_NOT_FOUND_INDEX = -1;
         private readonly int _NodeCapacity;
         private int _Count = 0;
         internal UnrolledLinkedListNode<T> _FirstNode;
@@ -102,7 +103,7 @@ namespace DataStructures
         public bool Remove(T item)
         {
             var found = false;
-            int nodeIndex = -1;
+            int nodeIndex = ITEM_NOT_FOUND_INDEX;
             var node = _FirstNode;
 
 
@@ -110,7 +111,7 @@ namespace DataStructures
             {
                 nodeIndex = node.IndexOf(item);
 
-                if (nodeIndex > -1)
+                if (nodeIndex > ITEM_NOT_FOUND_INDEX)
                 {
                     found = true;
                     break;
@@ -197,14 +198,14 @@ namespace DataStructures
         public int IndexOf(T item)
         {
             bool found = false;
-            int nodeIndex = -1;
+            int nodeIndex = ITEM_NOT_FOUND_INDEX;
             var node = _FirstNode;
             int itemsSearched = 0;
 
             while (node != null && !found)
             {
                 nodeIndex = node.IndexOf(item);
-                if (nodeIndex > -1)
+                if (nodeIndex > ITEM_NOT_FOUND_INDEX)
                 {
                     found = true;
                     break;
@@ -212,7 +213,7 @@ namespace DataStructures
                 itemsSearched += node.Count;
                 node = node.next;
             }
-            return (found) ? (itemsSearched + nodeIndex) : (nodeIndex);
+            return (found) ? (itemsSearched + nodeIndex) : (ITEM_NOT_FOUND_INDEX);
         }
 
         public void Insert(int index, T item)
@@ -285,6 +286,28 @@ namespace DataStructures
         public void AddRange(IEnumerable<T> range)
         {
             InsertRange(_Count, range);
+        }
+
+        public int LastIndexOf(T item)
+        {
+            bool found = false;
+            int nodeIndex = ITEM_NOT_FOUND_INDEX;
+            var node = _LastNode;
+            int itemsSearched = 0;
+
+            while (node != null && !found)
+            {
+                nodeIndex = node.LastIndexOf(item);
+                if (nodeIndex > ITEM_NOT_FOUND_INDEX)
+                {
+                    found = true;
+                    break;
+                }
+                itemsSearched += node.Count;
+                node = node.previous;
+            }
+            return (found) ? (_Count + nodeIndex - (itemsSearched + node.Count)) :
+                (ITEM_NOT_FOUND_INDEX);
         }
 
         public void InsertRange(int index, IEnumerable<T> collection)

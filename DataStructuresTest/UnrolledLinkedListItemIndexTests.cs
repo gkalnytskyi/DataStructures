@@ -72,6 +72,18 @@ namespace DataStructuresTest
         }
 
         [Test, Sequential]
+        public void LastIndexOf_returns_first_index_of_an_element(
+            [Values(17, 1, 3, 5, 9, 15, 16, -1)] int elem,
+            [Values(-1, 0, 2, 4, 8, 14, -1, -1)] int index)
+        {
+            // Assert
+            _List = TestUtils.GetUnrolledLinkedListWithItems(8, 15);
+
+            // Act, Assert
+            Assert.That(_List.LastIndexOf(elem), Is.EqualTo(index));
+        }
+
+        [Test, Sequential]
         public void Insert_throws_IndexOutOfRangeException_for_invalid_index(
             [Values(-1, 18, -100, 13)] int index,
             [Values(7, 15, 6, 11)] int listCount)
