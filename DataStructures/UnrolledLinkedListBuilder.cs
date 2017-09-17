@@ -19,11 +19,16 @@ namespace DataStructures
 
         public void AddNode(T[] node)
         {
+            if (node == null)
+                throw new ArgumentNullException("node");
             _NodesContent.Add(node);
         }
 
         public void AddNodes(params T[][] nodes)
         {
+            if (Array.FindIndex(nodes, x => x == null) > -1)
+                throw new ArgumentNullException("nodes", "Contains at least one 'null' element");
+
             _NodesContent.AddRange(nodes);
         }
 
@@ -37,7 +42,7 @@ namespace DataStructures
         {
             if (_NodeCapacity < 1)
             {
-                throw new ArgumentException("Node capacity should be set");
+                throw new Exception("Node capacity should be set");
             }
 
             if (_NodesContent.Count == 0)
@@ -46,15 +51,20 @@ namespace DataStructures
             }
 
             int halfCapasity = (_NodeCapacity + 1) / 2;
+            int count = 0;
 
             UnrolledLinkedListNode<T> firstNode = null;
             UnrolledLinkedListNode<T> currentNode = null;
+
+            if (_NodesContent[0].Length > _NodeCapacity)
+                throw new Exception("Node content is longer than node capacity");
 
             if (_NodesContent[0].Length < halfCapasity && _NodesContent.Count > 1)
                 throw new Exception("Only last node can be less than half full");
             
             currentNode = new UnrolledLinkedListNode<T>(_NodeCapacity, _NodesContent[0]);
             firstNode = currentNode;
+            count += currentNode.Count;
                 
 
             int nodeCount = _NodesContent.Count;
@@ -71,12 +81,14 @@ namespace DataStructures
                 var newNode = new UnrolledLinkedListNode<T>(_NodeCapacity, nodeContent);
                 currentNode.AppendNode(newNode);
                 currentNode = newNode;
+                count += currentNode.Count;
             }
 
             var newList = new UnrolledLinkedList<T>(_NodeCapacity)
             {
                 _FirstNode = firstNode,
-                _LastNode = currentNode
+                _LastNode = currentNode,
+                _Count = count
             };
 
             return newList;
