@@ -7,11 +7,12 @@ namespace DataStructures
     {
         internal UnrolledLinkedListNode<T> previous;
         internal UnrolledLinkedListNode<T> next;
+
+        private readonly int _halfCapacity;
         private int _size;
         internal int Count { get { return _size; } }
 
         internal readonly T[] data;
-        private readonly int _halfCapacity;
 
         #region Constructors
         internal UnrolledLinkedListNode(int capacity)
@@ -19,6 +20,20 @@ namespace DataStructures
             data = new T[capacity];
             _halfCapacity = (capacity + 1) / 2;
             _size = 0;
+        }
+
+        internal UnrolledLinkedListNode(int capacity, T[] content) : this(capacity)
+        {
+            if (content == null)
+                throw new ArgumentNullException("content");
+            if (content.Length > capacity)
+                throw new ArgumentException(
+                    "Content size cannot be larger than capacity",
+                    "content");
+
+            _size = content.Length;
+
+            Array.Copy(content, data, _size);
         }
         #endregion Constructors
 

@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="UnrolledLinkedList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnrolledLinkedListBuilder.cs" />
     <Compile Include="UnrolledLinkedListEnumerator.cs" />
     <Compile Include="UnrolledLinkedListNode.cs" />
   </ItemGroup>
