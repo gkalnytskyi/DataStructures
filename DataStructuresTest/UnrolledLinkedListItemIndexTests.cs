@@ -8,16 +8,26 @@ namespace DataStructuresTest
     [TestFixture]
     public class UnrolledLinkedListItemIndexTests
     {
-        UnrolledLinkedList<int> _List;
+        UnrolledLinkedListBuilder<int> listBuilder;
+
+        [SetUp]
+        public void Init()
+        {
+            listBuilder = new UnrolledLinkedListBuilder<int>();
+            listBuilder.SetNodeCapacity(8);
+        }
 
         [Test]
         public void Items_get_throws_when_index_is_out_of_range([Values(-1, 15, 16)] int index)
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, 15);
+            UnrolledLinkedList<int> list =
+                listBuilder.
+                AddNodesFromCollection(Enumerable.Range(1, 15)).
+                Build();
 
             // Act, Assert
-            Assert.Throws<IndexOutOfRangeException>(() => { var res = _List[index]; });
+            Assert.Throws<IndexOutOfRangeException>(() => { var res = list[index]; });
         }
 
         [Test]
@@ -25,10 +35,13 @@ namespace DataStructuresTest
             [Values(-1, 15, 16)] int index)
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, 15);
+            UnrolledLinkedList<int> list =
+                listBuilder.
+                AddNodesFromCollection(Enumerable.Range(1, 15)).
+                Build();
 
             // Act, Assert
-            Assert.Throws<IndexOutOfRangeException>(() => { _List[index] = 8; });
+            Assert.Throws<IndexOutOfRangeException>(() => { list[index] = 8; });
         }
 
         [Test, Sequential]
@@ -37,10 +50,13 @@ namespace DataStructuresTest
             [Values(1, 3, 6, 9)] int result)
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, 15);
+            UnrolledLinkedList<int> list =
+                listBuilder.
+                AddNodesFromCollection(Enumerable.Range(1, 15)).
+                Build();
 
             // Act, Assert
-            Assert.That(_List[index], Is.EqualTo(result));
+            Assert.That(list[index], Is.EqualTo(result));
         }
 
 
@@ -50,13 +66,16 @@ namespace DataStructuresTest
             [Values(8, 7, 6, 5)] int result)
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, 15);
+            UnrolledLinkedList<int> list =
+                listBuilder.
+                AddNodesFromCollection(Enumerable.Range(1, 15)).
+                Build();
 
             // Act
-            _List[index] = result;
+            list[index] = result;
 
             // Act, Assert
-            Assert.That(_List[index], Is.EqualTo(result));
+            Assert.That(list[index], Is.EqualTo(result));
         }
 
         [Test, Sequential]
@@ -65,10 +84,13 @@ namespace DataStructuresTest
             [Values(-1, 0, 2, 4, 8, 14, -1, -1)] int index)
         {
             // Assert
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, 15);
+            UnrolledLinkedList<int> list =
+                listBuilder.
+                AddNodesFromCollection(Enumerable.Range(1, 15)).
+                Build();
 
             // Act, Assert
-            Assert.That(_List.IndexOf(elem), Is.EqualTo(index));
+            Assert.That(list.IndexOf(elem), Is.EqualTo(index));
         }
 
         [Test, Sequential]
@@ -77,10 +99,13 @@ namespace DataStructuresTest
             [Values(-1, 0, 2, 4, 8, 14, -1, -1)] int index)
         {
             // Assert
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, 15);
+            UnrolledLinkedList<int> list =
+                listBuilder.
+                AddNodesFromCollection(Enumerable.Range(1, 15)).
+                Build();
 
             // Act, Assert
-            Assert.That(_List.LastIndexOf(elem), Is.EqualTo(index));
+            Assert.That(list.LastIndexOf(elem), Is.EqualTo(index));
         }
 
         [Test, Sequential]
@@ -89,10 +114,13 @@ namespace DataStructuresTest
             [Values(7, 15, 6, 11)] int listCount)
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(8, listCount);
+            UnrolledLinkedList<int> list =
+                listBuilder.
+                AddNodesFromCollection(Enumerable.Range(1, listCount)).
+                Build();
 
             // Act, Assert
-            Assert.Throws<IndexOutOfRangeException>(() => _List.Insert(index, 42));
+            Assert.Throws<IndexOutOfRangeException>(() => list.Insert(index, 42));
         }
     }
 }

@@ -45,7 +45,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TestUtils.cs" />
     <Compile Include="UnrolledLinkedListBuilderTests.cs" />
     <Compile Include="UnrolledLinkedListCopyToTests.cs" />
     <Compile Include="UnrolledLinkedListEnumeratorTests.cs" />

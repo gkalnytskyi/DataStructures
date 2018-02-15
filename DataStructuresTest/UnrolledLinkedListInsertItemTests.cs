@@ -8,64 +8,80 @@ namespace DataStructuresTest
     [TestFixture]
     public class UnrolledLinkedListInsertItemTests
     {
-        UnrolledLinkedList<int> _list;
+        UnrolledLinkedListBuilder<int> listBuilder;
+
+        [SetUp]
+        public void Init()
+        {
+            listBuilder = new UnrolledLinkedListBuilder<int>();
+        }
 
         [Test]
         public void Insert_Item_to_the_begining_of_the_list(
             [Values(0, 7)] int count)
         {
             // Arrange
-            _list = TestUtils.GetUnrolledLinkedListWithItems(8, count);
+            UnrolledLinkedList<int> list =
+                listBuilder.SetNodeCapacity(8).
+                AddNodesFromCollection(Enumerable.Range(1, count)).
+                Build();
 
             // Act
-            _list.Insert(0, 42);
+            list.Insert(0, 42);
 
             // Assert
-            var expected_list = Enumerable.Range(42, 1).
-                Concat(Enumerable.Range(1, count)).ToArray();
-            var expected_array = new int[8];
-            Array.Copy(expected_list, expected_array, expected_list.Length);
-            Assert.That(_list.Count, Is.EqualTo(count + 1));
-            Assert.That(_list._FirstNode.Count, Is.EqualTo(count + 1));
-            Assert.That(_list._FirstNode.data, Is.EquivalentTo(expected_array));
+            var expected_array = (new int[] { 42 }).
+                    Concat(Enumerable.Range(1, count)).
+                    Concat(Enumerable.Repeat(0, 8 - count - 1)).
+                    ToArray();
+            Assert.That(list.Count, Is.EqualTo(count + 1));
+            Assert.That(list._FirstNode.Count, Is.EqualTo(count + 1));
+            Assert.That(list._FirstNode.data, Is.EquivalentTo(expected_array));
         }
 
         [Test]
         public void Insert_item_at_the_end_of_the_list()
         {
-            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 7);
+            UnrolledLinkedList<int> list =
+                listBuilder.SetNodeCapacity(4).
+                AddNodesFromCollection(Enumerable.Range(1, 7)).
+                Build();
 
             // Act
-            _list.Insert(7, 42);
+            list.Insert(7, 42);
 
             // Assert
-            var expected_list = Enumerable.Range(1, 7).Concat(Enumerable.Range(42, 1));
+            var expected_list = new int[] { 1, 2, 3, 4, 5, 6, 7, 42 };
             var expected_array = new int[] { 5, 6, 7, 42 };
-            Assert.That(_list.Count, Is.EqualTo(8));
-            Assert.That(_list, Is.EquivalentTo(expected_list));
-            Assert.That(_list._LastNode.Count, Is.EqualTo(4));
-            Assert.That(_list._LastNode.data, Is.EquivalentTo(expected_array));
+            Assert.That(list.Count, Is.EqualTo(8));
+            Assert.That(list, Is.EquivalentTo(expected_list));
+            Assert.That(list._LastNode.Count, Is.EqualTo(4));
+            Assert.That(list._LastNode.data, Is.EquivalentTo(expected_array));
         }
 
         [Test]
         public void Insert_item_at_the_end_of_list_with_full_last_node_appends_new_node()
         {
             // Arrange
-            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 8);
-            var second_node = _list._LastNode;
+            UnrolledLinkedList<int> list =
+                listBuilder.SetNodeCapacity(4).
+                AddNodesFromCollection(Enumerable.Range(1, 8)).
+                Build();
+
+            var second_node = list._LastNode;
 
             // Act
-            _list.Insert(8, 42);
+            list.Insert(8, 42);
 
             // Assert
-            var expected_list = Enumerable.Range(1, 8).Concat(Enumerable.Range(42, 1));
+            var expected_list = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 42 };
             var expected_array = new int[] { 42, 0, 0, 0 };
-            Assert.That(_list.Count, Is.EqualTo(9));
-            Assert.That(_list, Is.EquivalentTo(expected_list));
-            Assert.That(second_node.next, Is.EqualTo(_list._LastNode));
-            Assert.That(_list._LastNode.previous, Is.EqualTo(second_node));
-            Assert.That(_list._LastNode.Count, Is.EqualTo(1));
-            Assert.That(_list._LastNode.data, Is.EquivalentTo(expected_array));
+            Assert.That(list.Count, Is.EqualTo(9));
+            Assert.That(list, Is.EquivalentTo(expected_list));
+            Assert.That(second_node.next, Is.EqualTo(list._LastNode));
+            Assert.That(list._LastNode.previous, Is.EqualTo(second_node));
+            Assert.That(list._LastNode.Count, Is.EqualTo(1));
+            Assert.That(list._LastNode.data, Is.EquivalentTo(expected_array));
         }
 
         [Test]
@@ -73,15 +89,20 @@ namespace DataStructuresTest
         {
             // Arrange
             const int count = 11;
-            _list = TestUtils.GetUnrolledLinkedListWithItems(4, count);
-            var second_node = _list._FirstNode.next;
-            _list.RemoveAt(7);
+            UnrolledLinkedList<int> list =
+                listBuilder.SetNodeCapacity(4).
+                AddNode(new int[] { 1, 2, 3, 4 }).
+                AddNode(new int[] { 5, 6, 7 }).
+                AddNode(new int[] { 9, 10, 11 }).
+                Build();
+
+            var second_node = list._FirstNode.next;
 
             // Act
-            _list.Insert(4, 42);
+            list.Insert(4, 42);
 
             // Assert
-            Assert.That(_list.Count, Is.EqualTo(count));
+            Assert.That(list.Count, Is.EqualTo(count));
             Assert.That(second_node.Count, Is.EqualTo(4));
             Assert.That(second_node.data, Is.EquivalentTo(new int[] { 42, 5, 6, 7}));
         }
@@ -90,19 +111,24 @@ namespace DataStructuresTest
         public void Insert_item_at_the_middle_of_the_last_not_full_node()
         {
             // Arrange
-            const int count = 7;
-            _list = TestUtils.GetUnrolledLinkedListWithItems(4, count);
-            var second_node = _list._LastNode;
+            UnrolledLinkedList<int> list =
+                listBuilder.SetNodeCapacity(4).
+                AddNodes(
+                    new int[] { 1, 2, 3, 4 },
+                    new int[] { 5, 6, 7 }).
+                Build();
+            
+            var second_node = list._LastNode;
 
             // Act
-            _list.Insert(4, 42);
+            list.Insert(4, 42);
 
             // Assert
-            Assert.That(_list.Count, Is.EqualTo(count + 1));
+            Assert.That(list.Count, Is.EqualTo(8));
             Assert.That(second_node.Count, Is.EqualTo(4));
             Assert.That(second_node.data, Is.EquivalentTo(new int[] { 42, 5, 6, 7 }));
             Assert.That(second_node.next, Is.Null);
-            Assert.That(_list._LastNode, Is.EqualTo(second_node));
+            Assert.That(list._LastNode, Is.EqualTo(second_node));
         }
 
         [Test]
@@ -111,20 +137,24 @@ namespace DataStructuresTest
         {
             // Arrange
             const int count = 10;
-            _list = TestUtils.GetUnrolledLinkedListWithItems(4, count);
-            var second_node = _list._FirstNode.next;
+            UnrolledLinkedList<int> list =
+                listBuilder.SetNodeCapacity(4).
+                AddNodesFromCollection(Enumerable.Range(1, count)).
+                Build();
+
+            var second_node = list._FirstNode.next;
 
             // Act
-            _list.Insert(index, 42);
+            list.Insert(index, 42);
 
             // Assert
             var new_node = second_node.next;
-            Assert.That(_list.Count, Is.EqualTo(count + 1));
+            Assert.That(list.Count, Is.EqualTo(count + 1));
             Assert.That(second_node.Count, Is.EqualTo(3));
             Assert.That(new_node.Count, Is.EqualTo(2));
             Assert.That(new_node.previous, Is.EqualTo(second_node));
-            Assert.That(new_node.next, Is.EqualTo(_list._LastNode));
-            Assert.That(_list._LastNode.previous, Is.EqualTo(new_node));
+            Assert.That(new_node.next, Is.EqualTo(list._LastNode));
+            Assert.That(list._LastNode.previous, Is.EqualTo(new_node));
         }
 
         [Test]
@@ -132,11 +162,15 @@ namespace DataStructuresTest
         {
             // Arrange
             const int count = 10;
-            _list = TestUtils.GetUnrolledLinkedListWithItems(4, count);
-            var second_node = _list._FirstNode.next;
+            UnrolledLinkedList<int> list =
+                listBuilder.SetNodeCapacity(4).
+                AddNodesFromCollection(Enumerable.Range(1, count)).
+                Build();
+
+            var second_node = list._FirstNode.next;
 
             // Act
-            _list.Insert(5, 42);
+            list.Insert(5, 42);
 
             // Assert
             var new_node = second_node.next;
@@ -149,11 +183,15 @@ namespace DataStructuresTest
         {
             // Arrange
             const int count = 10;
-            _list = TestUtils.GetUnrolledLinkedListWithItems(4, count);
-            var second_node = _list._FirstNode.next;
+            UnrolledLinkedList<int> list =
+                listBuilder.SetNodeCapacity(4).
+                AddNodesFromCollection(Enumerable.Range(1, count)).
+                Build();
+
+            var second_node = list._FirstNode.next;
 
             // Act
-            _list.Insert(6, 42);
+            list.Insert(6, 42);
 
             // Assert
             var new_node = second_node.next;
@@ -167,20 +205,23 @@ namespace DataStructuresTest
         {
             // Arrange
             const int count = 8;
-            _list = TestUtils.GetUnrolledLinkedListWithItems(4, count);
-            var second_node = _list._LastNode;
+            UnrolledLinkedList<int> list =
+                listBuilder.SetNodeCapacity(4).
+                AddNodesFromCollection(Enumerable.Range(1, count)).
+                Build();
+            var second_node = list._LastNode;
 
             // Act
-            _list.Insert(index, 42);
+            list.Insert(index, 42);
 
             // Assert
             var new_node = second_node.next;
-            Assert.That(_list.Count, Is.EqualTo(count + 1));
+            Assert.That(list.Count, Is.EqualTo(count + 1));
             Assert.That(second_node.Count, Is.EqualTo(3));
             Assert.That(new_node.Count, Is.EqualTo(2));
             Assert.That(new_node.previous, Is.EqualTo(second_node));
             Assert.That(new_node.next, Is.Null);
-            Assert.That(_list._LastNode, Is.EqualTo(new_node));
+            Assert.That(list._LastNode, Is.EqualTo(new_node));
         }
 
         [Test]
@@ -188,11 +229,14 @@ namespace DataStructuresTest
         {
             // Arrange
             const int count = 8;
-            _list = TestUtils.GetUnrolledLinkedListWithItems(4, count);
-            var second_node = _list._LastNode;
+            UnrolledLinkedList<int> list =
+                listBuilder.SetNodeCapacity(4).
+                AddNodesFromCollection(Enumerable.Range(1, count)).
+                Build();
+            var second_node = list._LastNode;
 
             // Act
-            _list.Insert(5, 42);
+            list.Insert(5, 42);
 
             // Assert
             var new_node = second_node.next;
@@ -205,11 +249,14 @@ namespace DataStructuresTest
         {
             // Arrange
             const int count = 8;
-            _list = TestUtils.GetUnrolledLinkedListWithItems(4, count);
-            var second_node = _list._LastNode;
+            UnrolledLinkedList<int> list =
+                listBuilder.SetNodeCapacity(4).
+                AddNodesFromCollection(Enumerable.Range(1, count)).
+                Build();
+            var second_node = list._LastNode;
 
             // Act
-            _list.Insert(6, 42);
+            list.Insert(6, 42);
 
             // Assert
             var new_node = second_node.next;
@@ -221,43 +268,49 @@ namespace DataStructuresTest
         public void Insert_at_the_begining_of_list_to_full_node_causes_it_to_split()
         {
             // Arrange
-            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 4);
+            UnrolledLinkedList<int> list =
+                listBuilder.SetNodeCapacity(4).
+                AddNodesFromCollection(Enumerable.Range(1, 4)).
+                Build();
 
             // Act
-            _list.Insert(0, 42);
+            list.Insert(0, 42);
 
             // Assert
-            Assert.That(_list.Count, Is.EqualTo(5));
-            Assert.That(_list._FirstNode.Count, Is.EqualTo(3));
-            Assert.That(_list._FirstNode.data, Is.EquivalentTo(new[] { 42, 1, 2, 0 }));
-            var second_node = _list._FirstNode.next;
+            Assert.That(list.Count, Is.EqualTo(5));
+            Assert.That(list._FirstNode.Count, Is.EqualTo(3));
+            Assert.That(list._FirstNode.data, Is.EquivalentTo(new[] { 42, 1, 2, 0 }));
+            var second_node = list._FirstNode.next;
             Assert.That(second_node.Count, Is.EqualTo(2));
             Assert.That(second_node.data, Is.EquivalentTo(new[] { 3, 4, 0, 0 }));
-            Assert.That(second_node.previous, Is.EqualTo(_list._FirstNode));
-            Assert.That(_list._LastNode, Is.EqualTo(second_node));
+            Assert.That(second_node.previous, Is.EqualTo(list._FirstNode));
+            Assert.That(list._LastNode, Is.EqualTo(second_node));
         }
 
         [Test]
         public void Insert_at_the_begining_of_list_to_full_node_causes_it_to_split_and_tail_updated()
         {
             // Arrange
-            _list = TestUtils.GetUnrolledLinkedListWithItems(4, 5);
+            UnrolledLinkedList<int> list =
+                listBuilder.SetNodeCapacity(4).
+                AddNodesFromCollection(Enumerable.Range(1, 5)).
+                Build();
 
             // Act
-            _list.Insert(0, 42);
+            list.Insert(0, 42);
 
             // Assert
-            Assert.That(_list.Count, Is.EqualTo(6));
-            Assert.That(_list._FirstNode.Count, Is.EqualTo(3));
-            Assert.That(_list._FirstNode.data, Is.EquivalentTo(new[] { 42, 1, 2, 0 }));
-            var second_node = _list._FirstNode.next;
+            Assert.That(list.Count, Is.EqualTo(6));
+            Assert.That(list._FirstNode.Count, Is.EqualTo(3));
+            Assert.That(list._FirstNode.data, Is.EquivalentTo(new[] { 42, 1, 2, 0 }));
+            var second_node = list._FirstNode.next;
             Assert.That(second_node.Count, Is.EqualTo(2));
             Assert.That(second_node.data, Is.EquivalentTo(new[] { 3, 4, 0, 0 }));
             Assert.That(second_node.next.previous, Is.EqualTo(second_node));
-            Assert.That(second_node.previous, Is.EqualTo(_list._FirstNode));
+            Assert.That(second_node.previous, Is.EqualTo(list._FirstNode));
             Assert.That(second_node.next.Count, Is.EqualTo(1));
             Assert.That(second_node.next.data, Is.EquivalentTo(new[] { 5, 0, 0, 0 }));
-            Assert.That(second_node.next, Is.EqualTo(_list._LastNode));
+            Assert.That(second_node.next, Is.EqualTo(list._LastNode));
         }
     }
 }

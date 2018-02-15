@@ -7,19 +7,19 @@ namespace DataStructuresTest
     [TestFixture]
     public class UnrolledLinkedListEnumeratorTests
     {
-        UnrolledLinkedList<int> _List;
+        UnrolledLinkedList<int> list;
 
         [SetUp]
         public void TestSetUp()
         {
-            _List = new UnrolledLinkedList<int>();
+            list = new UnrolledLinkedList<int>();
         }
 
         [Test]
         public void Get_Enumerator_Test()
         {
             // Act
-            var enumerator = _List.GetEnumerator();
+            var enumerator = list.GetEnumerator();
 
             // Assert
             Assert.That(enumerator, Is.Not.Null);
@@ -29,7 +29,7 @@ namespace DataStructuresTest
         public void Enumerator_Throws_Exception_For_Current_if_Not_Moved()
         {
             // Arrange
-            var enumerator = _List.GetEnumerator();
+            var enumerator = list.GetEnumerator();
             // Act
             Assert.That(
                 delegate { var current = enumerator.Current; },
@@ -40,11 +40,10 @@ namespace DataStructuresTest
         public void Getting_element_from_list_using_enumerator()
         {
             // Arrange
-            var _list = new UnrolledLinkedList<int>(8);
-            _list.Add(1);
+            list.Add(1);
 
             // Act
-            var enumerator = _list.GetEnumerator();
+            var enumerator = list.GetEnumerator();
             enumerator.MoveNext();
             var result = enumerator.Current;
 
@@ -56,8 +55,8 @@ namespace DataStructuresTest
         public void Enumerator_MoveNext_Returns_False_After_At_The_End_Of_Iteration()
         {
             // Arrange
-            _List.Add(5);
-            var enumerator = _List.GetEnumerator();
+            list.Add(5);
+            var enumerator = list.GetEnumerator();
             // Act
             enumerator.MoveNext();
             var canMove = enumerator.MoveNext();
@@ -72,8 +71,8 @@ namespace DataStructuresTest
         public void Element_is_added_to_UnrolledLinkedList()
         {
             // Act
-            _List.Add(5);
-            var enumerator = _List.GetEnumerator();
+            list.Add(5);
+            var enumerator = list.GetEnumerator();
             enumerator.MoveNext();
             var item = enumerator.Current;
             // Assert
@@ -85,13 +84,15 @@ namespace DataStructuresTest
         {
             const int seqLength = 5;
             // Arrange
-            _List = new UnrolledLinkedList<int>(2);
-            TestUtils.GenerateSequence(_List, seqLength);
+            list = new UnrolledLinkedListBuilder<int>().
+                SetNodeCapacity(2).
+                AddNodesFromCollection(Enumerable.Range(1, seqLength)).
+                Build();
 
             // Act
             var result = new int[seqLength];
             var i = 0;
-            foreach (var item in _List)
+            foreach (var item in list)
             {
                 result[i] = item;
                 i++;
@@ -107,12 +108,14 @@ namespace DataStructuresTest
         {
             const int seqLength = 5;
             // Arrange
-            int[] result = new int[2];
-            _List = new UnrolledLinkedList<int>(3);
-            TestUtils.GenerateSequence(_List, seqLength);
+            list = new UnrolledLinkedListBuilder<int>().
+                SetNodeCapacity(3).
+                AddNodesFromCollection(Enumerable.Range(1, seqLength)).
+                Build();
 
             // Act
-            var enumerator = _List.GetEnumerator();
+            int[] result = new int[2];
+            var enumerator = list.GetEnumerator();
             enumerator.MoveNext();
             enumerator.MoveNext();
             enumerator.Reset();

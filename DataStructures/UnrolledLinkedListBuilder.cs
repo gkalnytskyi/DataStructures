@@ -38,8 +38,8 @@ namespace DataStructures
             {
                 throw new ArgumentException("nodes", "Contains at least one 'null' element");
             }
-
-            return AddNodes(nodes);
+            
+            return AddNodes((IEnumerable<T[]>)nodes);
         }
 
         public UnrolledLinkedListBuilder<T> AddNodesFromCollection(IEnumerable<T> items)
@@ -149,7 +149,9 @@ namespace DataStructures
 
             if (bucket != null && count > 0)
             {
-                yield return bucket;
+                T[] partial = new T[count];
+                Array.Copy(bucket, partial, count);
+                yield return partial;
             }
         }
     }

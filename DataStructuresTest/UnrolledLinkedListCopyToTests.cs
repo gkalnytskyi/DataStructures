@@ -8,27 +8,36 @@ namespace DataStructuresTest
     [TestFixture]
     public class UnrolledLinkedListCopyToTests
     {
-        UnrolledLinkedList<int> _List;
+        UnrolledLinkedListBuilder<int> listBuilder;
+
+        [SetUp]
+        public void Init()
+        {
+            listBuilder = new UnrolledLinkedListBuilder<int>();
+            listBuilder.SetNodeCapacity(4);
+        }
 
         [Test]
         public void CopyTo_throws_exception_if_argument_array_is_null()
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 9);
+            UnrolledLinkedList<int> list =
+                listBuilder.AddNodesFromCollection(Enumerable.Range(1, 9)).Build();
 
             // Act, Assert
-            Assert.Throws<ArgumentNullException>(() => _List.CopyTo(null, 0));
+            Assert.Throws<ArgumentNullException>(() => list.CopyTo(null, 0));
         }
 
         [Test]
         public void CopyTo_throws_exception_if_index_is_less_than_zero()
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 9);
+            UnrolledLinkedList<int> list =
+                listBuilder.AddNodesFromCollection(Enumerable.Range(1, 9)).Build();
             var array = new int[9];
 
             // Act, Assert
-            Assert.Throws<ArgumentOutOfRangeException>(() => _List.CopyTo(array, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.CopyTo(array, -1));
         }
 
         [Test, Sequential]
@@ -37,26 +46,27 @@ namespace DataStructuresTest
             [Values(2, 0)] int startIndex)
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 9);
+            UnrolledLinkedList<int> list =
+                listBuilder.AddNodesFromCollection(Enumerable.Range(1, 9)).Build();
             var array = new int[arraySize];
 
             // Act, Assert
-            Assert.Throws<ArgumentException>(() => _List.CopyTo(array, startIndex));
+            Assert.Throws<ArgumentException>(() => list.CopyTo(array, startIndex));
         }
 
         [Test]
         public void CopyTo_copies_items_to_array_starting_at_index_zero()
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 6);
+            UnrolledLinkedList<int> list =
+                listBuilder.AddNodesFromCollection(Enumerable.Range(1, 6)).Build();
             var array = new int[10];
 
             // Act
-            _List.CopyTo(array, 0);
+            list.CopyTo(array, 0);
 
             // Assert
-            var expectedCollection = Enumerable.Range(1, 6).
-                Concat(Enumerable.Repeat(0, 4));
+            var expectedCollection = new int[] { 1, 2, 3, 4, 5, 6, 0, 0, 0, 0 };
             Assert.That(array, Is.EquivalentTo(expectedCollection));
         }
 
@@ -64,16 +74,15 @@ namespace DataStructuresTest
         public void CopyTo_copies_items_to_array_starting_at_non_zero_index()
         {
             // Arrange
-            _List = TestUtils.GetUnrolledLinkedListWithItems(4, 6);
+            UnrolledLinkedList<int> list =
+                listBuilder.AddNodesFromCollection(Enumerable.Range(1, 6)).Build();
             var array = new int[10];
 
             // Act
-            _List.CopyTo(array, 2);
+            list.CopyTo(array, 2);
 
             // Assert
-            var expectedCollection = Enumerable.Repeat(0, 2).
-                Concat(Enumerable.Range(1, 6)).
-                Concat(Enumerable.Repeat(0, 2));
+            var expectedCollection = new int[] { 0, 0, 1, 2, 3, 4, 5, 6, 0, 0 };
             Assert.That(array, Is.EquivalentTo(expectedCollection));
         }
     }
