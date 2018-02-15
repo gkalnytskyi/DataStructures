@@ -9,27 +9,53 @@ namespace DataStructures
         private const int NUMBER_OF_NODES = 8;
         private List<T[]> _NodesContent = new List<T[]>(NUMBER_OF_NODES);
 
-        public void SetNodeCapacity(int capacity)
+        public UnrolledLinkedListBuilder<T> SetNodeCapacity(int capacity)
         {
             if (capacity < 1)
                 throw new ArgumentException("Capacity cannot not be less than 1");
 
             _NodeCapacity = capacity;
+            ResetNodes();
+            return this;
         }
 
-        public void AddNode(T[] node)
+        public UnrolledLinkedListBuilder<T> AddNode(T[] node)
         {
             if (node == null)
                 throw new ArgumentNullException("node");
             _NodesContent.Add(node);
+            return this;
         }
 
-        public void AddNodes(params T[][] nodes)
+        public UnrolledLinkedListBuilder<T> AddNodes(params T[][] nodes)
         {
-            if (Array.FindIndex(nodes, x => x == null) > -1)
-                throw new ArgumentNullException("nodes", "Contains at least one 'null' element");
+            if (nodes == null)
+            {
+                throw new ArgumentNullException("nodes");
+            }
 
+            if (Array.FindIndex(nodes, x => x == null) > -1)
+            {
+                throw new ArgumentException("nodes", "Contains at least one 'null' element");
+            }
+
+            return AddNodes(nodes);
+        }
+
+        public UnrolledLinkedListBuilder<T> AddNodesFromCollection(IEnumerable<T> items)
+        {
+            if (items == null)
+            {
+                throw new ArgumentNullException("items");
+            }
+
+            return AddNodes(Batch(items));
+        }
+
+        private UnrolledLinkedListBuilder<T> AddNodes(IEnumerable<T[]> nodes)
+        {
             _NodesContent.AddRange(nodes);
+            return this;
         }
 
         public void ResetNodes()
@@ -61,11 +87,11 @@ namespace DataStructures
 
             if (_NodesContent[0].Length < halfCapasity && _NodesContent.Count > 1)
                 throw new Exception("Only last node can be less than half full");
-            
+
             currentNode = new UnrolledLinkedListNode<T>(_NodeCapacity, _NodesContent[0]);
             firstNode = currentNode;
             count += currentNode.Count;
-                
+
 
             int nodeCount = _NodesContent.Count;
             for (int i = 1; i < nodeCount; i++)
@@ -75,7 +101,7 @@ namespace DataStructures
                 if (nodeContent.Length > _NodeCapacity)
                     throw new Exception("Node content is longer than node capacity");
 
-                if (nodeContent.Length < halfCapasity && (i+1) < nodeCount)
+                if (nodeContent.Length < halfCapasity && (i + 1) < nodeCount)
                     throw new Exception("Only last node can be less than half full");
 
                 var newNode = new UnrolledLinkedListNode<T>(_NodeCapacity, nodeContent);
@@ -92,6 +118,39 @@ namespace DataStructures
             };
 
             return newList;
+        }
+
+        private IEnumerable<T[]> Batch(IEnumerable<T> source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+
+            T[] bucket = null;
+            int count = 0;
+
+            foreach (T item in source)
+            {
+                if (bucket == null)
+                {
+                    bucket = new T[_NodeCapacity];
+                    count = 0;
+                }
+
+                bucket[count++] = item;
+
+                if (count == _NodeCapacity)
+                {
+                    yield return bucket;
+                    bucket = null;
+                }
+            }
+
+            if (bucket != null && count > 0)
+            {
+                yield return bucket;
+            }
         }
     }
 }

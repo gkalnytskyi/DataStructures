@@ -9,7 +9,7 @@ namespace DataStructures
         public const int NODE_CAPACITY = 16;
         private const int ITEM_NOT_FOUND_INDEX = -1;
 
-        internal readonly int NodeCapacity;
+        internal readonly int _NodeCapacity;
         internal int _Count = 0;
 
         internal UnrolledLinkedListNode<T> _FirstNode;
@@ -25,8 +25,8 @@ namespace DataStructures
             {
                 throw new ArgumentOutOfRangeException("NodeCapacity cannot be less than 1");
             }
-            NodeCapacity = nodeCapacity;
-            _LastNode = _FirstNode = new UnrolledLinkedListNode<T>(NodeCapacity);
+            _NodeCapacity = nodeCapacity;
+            _LastNode = _FirstNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
             _Count = 0;
         }
 
@@ -229,7 +229,7 @@ namespace DataStructures
                 }
                 else
                 {
-                    var newNode = new UnrolledLinkedListNode<T>(NodeCapacity);
+                    var newNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
                     newNode.Add(item);
                     _LastNode.AppendNode(newNode);
                     _LastNode = newNode;
@@ -247,10 +247,10 @@ namespace DataStructures
             }
             else
             {
-                var newNode = new UnrolledLinkedListNode<T>(NodeCapacity);
+                var newNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
                 node.InsertNodeNext(newNode);
                 var targetNode = node;
-                int midIndex = NodeCapacity / 2;
+                int midIndex = _NodeCapacity / 2;
 
                 if (nodeIndex > midIndex)
                 {
@@ -347,11 +347,11 @@ namespace DataStructures
                 while (copyStartIndex < newDataLength)
                 {
                     int itemsToCopyCount = Math.Min(
-                        NodeCapacity - node.Count,
+                        _NodeCapacity - node.Count,
                         newDataLength - copyStartIndex);
                     node.AddRange(newData, copyStartIndex, itemsToCopyCount);
                     copyStartIndex += itemsToCopyCount;
-                    var newNode = new UnrolledLinkedListNode<T>(NodeCapacity);
+                    var newNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
                     node.AppendNode(newNode);
                     node = newNode;
                 }
@@ -368,9 +368,9 @@ namespace DataStructures
                 {
                     node.Add(enumerator.Current);
                     collectionLength++;
-                    if (node.Count == NodeCapacity)
+                    if (node.Count == _NodeCapacity)
                     {
-                        var newNode = new UnrolledLinkedListNode<T>(NodeCapacity);
+                        var newNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
                         node.AppendNode(newNode);
                         node = newNode;
                     }
@@ -379,9 +379,9 @@ namespace DataStructures
                 for (int i = 0; i < remainingNodeItemsCount; i++)
                 {
                     node.Add(remainingNodeData[i]);
-                    if (node.Count == NodeCapacity)
+                    if (node.Count == _NodeCapacity)
                     {
-                        var newNode = new UnrolledLinkedListNode<T>(NodeCapacity);
+                        var newNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
                         node.AppendNode(newNode);
                         node = newNode;
                     }
@@ -555,7 +555,7 @@ namespace DataStructures
 
             if (currentNode == null)
             {
-                currentNode = new UnrolledLinkedListNode<T>(NodeCapacity);
+                currentNode = new UnrolledLinkedListNode<T>(_NodeCapacity);
                 _LastNode.AppendNode(currentNode);
                 _LastNode = currentNode;
             }

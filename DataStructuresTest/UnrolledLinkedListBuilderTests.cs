@@ -31,8 +31,12 @@ namespace DataStructuresTest
         [Test]
         public void AddNodes_throws_when_one_of_the_arguments_null()
         {
-            Assert.That(() => builder.AddNodes(new int[] { 1, 2, 3 }, null, new int[] { 8, 9 }),
-                Throws.ArgumentNullException);
+            Assert.That(
+                () => builder.AddNodes(
+                    new int[] { 1, 2, 3 },
+                    null,
+                    new int[] { 8, 9 }),
+                Throws.ArgumentException);
         }
 
         [Test]
@@ -69,7 +73,7 @@ namespace DataStructuresTest
             var list = builder.Build();
 
             Assert.That(list, Is.Not.Null);
-            Assert.That(list.NodeCapacity, Is.EqualTo(4));
+            Assert.That(list._NodeCapacity, Is.EqualTo(4));
             Assert.That(list.Count, Is.EqualTo(0));
         }
 
